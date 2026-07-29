@@ -1,0 +1,156 @@
+:root {
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    color: #1f2937;
+    background: #f3f4f6;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-width: 320px;
+    min-height: 100%;
+    background: #f3f4f6;
+}
+
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    background: #f3f4f6;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+}
+
+h1,
+h2,
+h3,
+p {
+    margin-top: 0;
+}
+
+#root {
+    min-height: 100vh;
+}
+:root {
+    --app-background: #f3f4f6;
+    --app-text: #1f2937;
+    --surface: #ffffff;
+    --surface-secondary: #f8fafc;
+    --border-color: #d8e0ea;
+}
+
+:root[data-theme="dark"] {
+    --app-background: #071426;
+    --app-text: #eef4ff;
+    --surface: #142640;
+    --surface-secondary: #162844;
+    --border-color: rgba(148, 163, 184, 0.22);
+}
+
+html,
+body {
+    color: var(--app-text);
+    background: var(--app-background);
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --app-background: #edf2f7;
+    --app-text: #172033;
+    --surface: #ffffff;
+    --surface-secondary: #f8fafc;
+    --border-color: #d8e0ea;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --app-background: #071426;
+    --app-text: #eef4ff;
+    --surface: #142640;
+    --surface-secondary: #162844;
+    --border-color: rgba(148, 163, 184, 0.22);
+}
+
+html,
+body,
+#root {
+    color: var(--app-text);
+    background: var(--app-background);
+}
+
+/* ==========================================================
+   Largeur commune des écrans applicatifs
+   ========================================================== */
+
+.dashboard,
+.settings-page,
+.production {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+.dashboard__screen,
+.settings-page__screen,
+.production-screen {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+.dashboard__header-area,
+.settings-topbar,
+.dashboard-topbar,
+.production-topbar {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+/* ==========================================================
+   Les topbars occupent toute la largeur de leur écran
+   ========================================================== */
+
+.dashboard__screen,
+.settings-page__screen,
+.production-screen {
+    width: 100%;
+    max-width: none;
+}
+
+.dashboard__header-area,
+.settings-topbar,
+.dashboard-topbar,
+.production-topbar {
+    width: 100%;
+    max-width: none;
+}

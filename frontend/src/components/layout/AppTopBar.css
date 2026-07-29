@@ -1,0 +1,282 @@
+/* ==========================================================
+   Bandeau supérieur commun
+   ========================================================== */
+
+.app-topbar {
+    --app-topbar-height: 72px;
+    --app-topbar-gap: 8px;
+    --app-topbar-left-width: 400px;
+    --app-topbar-theme-width: 176px;
+    --app-topbar-action-size: 56px;
+
+    display: grid;
+    grid-template-columns:
+        minmax(0, var(--app-topbar-left-width))
+        minmax(0, 1fr)
+        auto
+        var(--app-topbar-theme-width);
+    align-items: stretch;
+    gap: var(--app-topbar-gap);
+
+    width: 100%;
+    min-width: 0;
+    height: var(--app-topbar-height);
+    min-height: var(--app-topbar-height);
+    box-sizing: border-box;
+}
+
+.app-topbar__left,
+.app-topbar__center,
+.app-topbar__actions,
+.app-topbar__theme {
+    min-width: 0;
+    min-height: 0;
+}
+
+.app-topbar__left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.app-topbar__center {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+}
+
+.app-topbar__actions {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: var(--app-topbar-gap);
+}
+
+.app-topbar__actions:empty {
+    display: none;
+}
+
+.app-topbar__actions > button,
+.app-topbar__actions > a {
+    flex: 0 0 var(--app-topbar-action-size);
+
+    width: var(--app-topbar-action-size);
+    min-width: var(--app-topbar-action-size);
+    height: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.app-topbar__theme {
+    display: flex;
+    align-items: stretch;
+}
+
+.app-topbar__theme .theme-switch-control {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+.app-topbar__left > *,
+.app-topbar__center > *,
+.app-topbar__theme > * {
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* ==========================================================
+   Titre commun
+   ========================================================== */
+
+.app-page-heading {
+    display: grid;
+    align-content: center;
+    gap: 4px;
+
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+}
+
+.app-page-heading__eyebrow {
+    margin: 0;
+
+    color: #f2b900;
+
+    font-size: 0.65rem;
+    font-weight: 950;
+    letter-spacing: 0.13em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.app-page-heading h1 {
+    margin: 0;
+
+    color: #152035;
+
+    font-size: clamp(1.75rem, 2vw, 2.25rem);
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.app-page-heading__subtitle {
+    display: block;
+
+    max-width: 390px;
+    margin: 0;
+
+    color: #8ba0bd;
+
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+:root[data-theme="dark"]
+.app-page-heading h1 {
+    color: #eef5ff;
+}
+
+:root[data-theme="dark"]
+.app-page-heading__subtitle {
+    color: #9fb0c8;
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+
+@media (max-width: 1450px) {
+    .app-topbar {
+        --app-topbar-left-width: 360px;
+        --app-topbar-theme-width: 180px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .app-topbar {
+        --app-topbar-left-width: 320px;
+        --app-topbar-theme-width: 175px;
+        --app-topbar-action-size: 58px;
+    }
+
+    .app-page-heading h1 {
+        font-size: 1.75rem;
+    }
+
+    .app-page-heading__subtitle {
+        font-size: 0.72rem;
+    }
+}
+
+@media (max-width: 980px) {
+    .app-topbar {
+        height: auto;
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto
+            var(--app-topbar-theme-width);
+        grid-template-rows:
+            var(--app-topbar-height)
+            auto;
+    }
+
+    .app-topbar__left {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .app-topbar__actions {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .app-topbar__theme {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .app-topbar__center {
+        grid-column: 1 / -1;
+        grid-row: 2;
+
+        min-height: 68px;
+    }
+}
+
+@media (max-width: 680px) {
+    .app-topbar {
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+        grid-template-rows:
+            auto
+            64px
+            auto;
+    }
+
+    .app-topbar__left {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .app-topbar__actions {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .app-topbar__theme {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .app-topbar__center {
+        grid-column: 1 / -1;
+        grid-row: 3;
+    }
+}
+
+/* ==========================================================
+   Ajustement final — topbar plus fine
+   ========================================================== */
+
+.app-topbar__center {
+    justify-content: flex-end;
+}
+
+.app-topbar__center > * {
+    width: auto;
+    max-width: 100%;
+}
+
+.app-topbar__theme {
+    justify-self: end;
+}
+
+.app-topbar__theme .theme-switch-control {
+    min-height: 0;
+}
+
+.app-page-heading {
+    gap: 2px;
+}
+
+.app-page-heading__eyebrow {
+    font-size: 0.58rem;
+}
+
+.app-page-heading h1 {
+    font-size: clamp(1.55rem, 1.8vw, 2rem);
+}
+
+.app-page-heading__subtitle {
+    max-width: 360px;
+
+    font-size: 0.7rem;
+}

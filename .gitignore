@@ -1,0 +1,43 @@
+.DS_Store
+.idea/
+
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.local
+# Base SQLite locale
+
+backend/data/*.sqlite
+
+backend/data/*.sqlite-shm
+
+backend/data/*.sqlite-wal
+
+
+# Base SQLite locale
+backend/data/*.sqlite
+backend/data/*.sqlite-shm
+backend/data/*.sqlite-wal
+
+# IDE
+.idea/
+
+# Dépendances et builds
+**/node_modules/
+**/dist/
+
+# Configuration locale
+**/.env
+
+# Sauvegardes manuelles
+*.bak
+backups/
+
+# Fichiers temporaires SQLite
+*.sqlite-shm
+*.sqlite-wal
