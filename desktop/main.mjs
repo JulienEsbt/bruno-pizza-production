@@ -6,6 +6,7 @@ import {
     protocol,
     session,
 } from "electron";
+import path from "node:path";
 import electronSquirrelStartup from "electron-squirrel-startup";
 
 import {
@@ -26,8 +27,10 @@ import {
     getZoomAction,
 } from "./zoom.mjs";
 
+const APP_NAME = "Appli Montage";
+const LEGACY_USER_DATA_DIRECTORY_NAME = "Bruno Pizza";
 const APP_USER_MODEL_ID =
-    "com.squirrel.BrunoPizza.BrunoPizza";
+    "com.squirrel.AppliMontage.AppliMontage";
 
 let mainWindow;
 let runningServer;
@@ -117,7 +120,7 @@ const createMainWindow = async () => {
     }
 
     const window = new BrowserWindow({
-        title: "Bruno Pizza",
+        title: APP_NAME,
         width: 1440,
         height: 900,
         minWidth: 1024,
@@ -216,11 +219,11 @@ const showStartupError = (error) => {
             : String(error);
 
     console.error(
-        "Impossible de démarrer Bruno Pizza :",
+        `Impossible de démarrer ${APP_NAME} :`,
         error,
     );
     dialog.showErrorBox(
-        "Bruno Pizza ne peut pas démarrer",
+        `${APP_NAME} ne peut pas démarrer`,
         `Le serveur local n’a pas pu être lancé.\n\n${details}`,
     );
 };
@@ -240,6 +243,14 @@ const bootApplication = async () => {
 if (electronSquirrelStartup) {
     app.quit();
 } else {
+    app.setName(APP_NAME);
+    app.setPath(
+        "userData",
+        path.join(
+            app.getPath("appData"),
+            LEGACY_USER_DATA_DIRECTORY_NAME,
+        ),
+    );
     app.setAppUserModelId(APP_USER_MODEL_ID);
 
     const ownsSingleInstanceLock =

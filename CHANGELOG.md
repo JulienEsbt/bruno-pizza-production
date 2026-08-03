@@ -2,6 +2,16 @@
 
 Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
+## 1.1.3 — 3 août 2026
+
+### Identité produit
+
+- l’application desktop, les installateurs Windows et macOS prennent le nom
+  **Appli Montage** ;
+- ajout de l’identité visuelle Bruno Pizzaiolo ;
+- conservation volontaire du dossier de données historique afin qu’une mise à
+  jour ne réinitialise ni le catalogue ni les photos existants.
+
 ## 1.1.2 — 3 août 2026
 
 ### Correctif

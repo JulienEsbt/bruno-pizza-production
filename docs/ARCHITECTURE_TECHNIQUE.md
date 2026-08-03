@@ -1,9 +1,9 @@
-# Architecture technique — Bruno Pizza 1.1.2
+# Architecture technique — Appli Montage 1.1.3
 
 ## Vue d’ensemble
 
-Bruno Pizza est une application locale composée d’un frontend React et d’une
-API Express persistée dans SQLite.
+Appli Montage est l’application locale livrée pour Bruno Pizzaiolo. Elle est
+composée d’un frontend React et d’une API Express persistée dans SQLite.
 
 ```text
 Fichier Excel
@@ -155,7 +155,7 @@ base locale de développement.
 - ressources statiques versionnées mises en cache, `index.html` non mis en
   cache.
 
-La 1.1.2 n’intègre ni comptes utilisateurs ni authentification. Le serveur ne
+La 1.1.3 n’intègre ni comptes utilisateurs ni authentification. Le serveur ne
 doit donc pas être exposé tel quel sur Internet ou sur un réseau non maîtrisé.
 
 ## Qualité et vérification

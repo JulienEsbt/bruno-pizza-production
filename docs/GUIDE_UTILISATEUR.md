@@ -1,4 +1,4 @@
-# Guide utilisateur — Bruno Pizza 1.1.2
+# Guide utilisateur — Appli Montage 1.1.3
 
 Ce guide s’adresse aux personnes qui préparent les productions et fabriquent
 les pizzas. L’application comporte trois écrans : le tableau de production, le

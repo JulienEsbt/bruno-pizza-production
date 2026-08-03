@@ -1,6 +1,6 @@
-# Frontend Bruno Pizza
+# Frontend Appli Montage
 
-Interface React et TypeScript de Bruno Pizza 1.1.2.
+Interface React et TypeScript d’Appli Montage.
 
 La documentation de référence se trouve à la racine du projet :
 

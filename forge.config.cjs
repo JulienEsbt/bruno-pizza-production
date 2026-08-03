@@ -7,7 +7,7 @@ const electronDownloadCache =
 module.exports = {
     packagerConfig: {
         asar: true,
-        appBundleId: "fr.brunopizza.production",
+        appBundleId: "fr.brunopizza.appli-montage",
         ...(electronDownloadCache
             ? {
                   download: {
@@ -15,10 +15,10 @@ module.exports = {
                   },
               }
             : {}),
-        executableName: "BrunoPizza",
+        executableName: "AppliMontage",
         icon: path.resolve(
             __dirname,
-            "desktop/assets/bruno-pizza",
+            "desktop/assets/appli-montage",
         ),
         overwrite: true,
         prune: true,
@@ -46,15 +46,15 @@ module.exports = {
             name: "@electron-forge/maker-squirrel",
             platforms: ["win32"],
             config: {
-                name: "BrunoPizza",
+                name: "AppliMontage",
                 authors: packageJson.author,
                 description: packageJson.description,
                 noMsi: true,
                 setupExe:
-                    `Bruno-Pizza-Setup-${packageJson.version}.exe`,
+                    `Appli-Montage-Setup-${packageJson.version}.exe`,
                 setupIcon: path.resolve(
                     __dirname,
-                    "desktop/assets/bruno-pizza.ico",
+                    "desktop/assets/appli-montage.ico",
                 ),
             },
         },
