@@ -79,6 +79,7 @@ export default function SettingsView() {
         addDistributor,
         updateDistributor,
         deleteDistributor,
+        setPizzaImageUpdatedAt,
         clearError,
     } = useSettings();
 
@@ -515,6 +516,9 @@ export default function SettingsView() {
                         }
                         onRemoveIngredient={
                             handleRemoveIngredientFromPizza
+                        }
+                        onImageChange={
+                            setPizzaImageUpdatedAt
                         }
                     />
                 ) : activeTab === "ingredients" ? (

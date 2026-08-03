@@ -2,6 +2,13 @@
 
 Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
+## 1.1.2 — 3 août 2026
+
+### Correctif
+
+- les photos ajoutées aux pizzas restent affichées après un changement
+  d’onglet, de page ou de mode de production.
+
 ## 1.1.1 — 3 août 2026
 
 ### Correctifs et ergonomie

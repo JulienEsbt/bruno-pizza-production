@@ -2,7 +2,12 @@ import {
     getApiUrl,
     HttpError,
     request,
+    requestJson,
 } from "../../../shared/api/httpClient";
+
+interface PizzaImageUploadResponse {
+    updatedAt: string;
+}
 
 const getPizzaImagePath = (
     pizzaId: string,
@@ -31,11 +36,11 @@ export const getPizzaImageUrl = (
 export const uploadPizzaImage = async (
     pizzaId: string,
     file: File,
-): Promise<void> => {
+): Promise<PizzaImageUploadResponse> => {
     const formData = new FormData();
     formData.append("image", file);
 
-    await request(
+    const response = await requestJson(
         getPizzaImagePath(pizzaId),
         {
             method: "PUT",
@@ -43,6 +48,22 @@ export const uploadPizzaImage = async (
         },
         30_000,
     );
+
+    if (
+        !response ||
+        typeof response !== "object" ||
+        !("updatedAt" in response) ||
+        typeof response.updatedAt !== "string" ||
+        !response.updatedAt.trim()
+    ) {
+        throw new Error(
+            "Le serveur a renvoyé une réponse photo invalide.",
+        );
+    }
+
+    return {
+        updatedAt: response.updatedAt,
+    };
 };
 
 export const deletePizzaImage = async (

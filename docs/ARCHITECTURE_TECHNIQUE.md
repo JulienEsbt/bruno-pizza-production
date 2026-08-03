@@ -1,4 +1,4 @@
-# Architecture technique — Bruno Pizza 1.1.1
+# Architecture technique — Bruno Pizza 1.1.2
 
 ## Vue d’ensemble
 
@@ -155,7 +155,7 @@ base locale de développement.
 - ressources statiques versionnées mises en cache, `index.html` non mis en
   cache.
 
-La 1.1.1 n’intègre ni comptes utilisateurs ni authentification. Le serveur ne
+La 1.1.2 n’intègre ni comptes utilisateurs ni authentification. Le serveur ne
 doit donc pas être exposé tel quel sur Internet ou sur un réseau non maîtrisé.
 
 ## Qualité et vérification

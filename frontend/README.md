@@ -1,6 +1,6 @@
 # Frontend Bruno Pizza
 
-Interface React et TypeScript de Bruno Pizza 1.1.1.
+Interface React et TypeScript de Bruno Pizza 1.1.2.
 
 La documentation de référence se trouve à la racine du projet :
 

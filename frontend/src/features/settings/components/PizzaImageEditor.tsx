@@ -16,7 +16,7 @@ interface PizzaImageEditorProps {
     pizzaName: string;
     initialHasImage: boolean;
     onImageChange?: (
-        version: number | null,
+        version: string | number | null,
     ) => void;
 }
 
@@ -30,7 +30,7 @@ export default function PizzaImageEditor({
         useRef<HTMLInputElement>(null);
 
     const [version, setVersion] =
-        useState(() => Date.now());
+        useState<string | number>(() => Date.now());
 
     const [hasImage, setHasImage] =
         useState(initialHasImage);
@@ -53,12 +53,12 @@ export default function PizzaImageEditor({
             setIsSaving(true);
             setError(null);
 
-            await uploadPizzaImage(
+            const savedImage = await uploadPizzaImage(
                 pizzaId,
                 file,
             );
 
-            const nextVersion = Date.now();
+            const nextVersion = savedImage.updatedAt;
             setHasImage(true);
             setVersion(nextVersion);
             onImageChange?.(nextVersion);

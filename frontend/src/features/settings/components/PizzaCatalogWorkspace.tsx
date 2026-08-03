@@ -70,6 +70,11 @@ interface PizzaCatalogWorkspaceProps {
         ingredientId: string,
     ) => Promise<void>;
 
+    onImageChange: (
+        pizzaId: string,
+        imageUpdatedAt: string | null,
+    ) => void;
+
 }
 
 const normalizePizzaName = (
@@ -93,6 +98,7 @@ export default function PizzaCatalogWorkspace({
     onDeletePizza,
     onAddIngredient,
     onRemoveIngredient,
+    onImageChange,
 }: PizzaCatalogWorkspaceProps) {
     const [
         selectedPizzaId,
@@ -117,7 +123,7 @@ export default function PizzaCatalogWorkspace({
     ] = useState<string | null>(null);
     const [imageVersions, setImageVersions] =
         useState<
-            Record<string, number | null>
+            Record<string, string | number | null>
         >({});
 
     const effectiveSelectedPizzaId =
@@ -783,7 +789,7 @@ export default function PizzaCatalogWorkspace({
                                 }
                                 onImageChange={(
                                     version,
-                                ) =>
+                                ) => {
                                     setImageVersions(
                                         (
                                             currentVersions,
@@ -792,8 +798,15 @@ export default function PizzaCatalogWorkspace({
                                             [selectedPizza.id]:
                                                 version,
                                         }),
-                                    )
+                                    );
+                                    onImageChange(
+                                        selectedPizza.id,
+                                        version === null
+                                            ? null
+                                            : String(version),
+                                    );
                                 }
+                            }
                             />
                         </section>
                     </aside>

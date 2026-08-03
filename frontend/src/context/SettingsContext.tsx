@@ -22,6 +22,7 @@ import {
     updateIngredient as updateIngredientFromApi,
     updatePizza as updatePizzaFromApi,
 } from "../features/settings/services/settingsApi";
+import { updatePizzaImageUpdatedAt } from "../features/settings/domain/imageCatalogState";
 
 import type {
     CreateDistributorInput,
@@ -84,6 +85,11 @@ interface SettingsContextValue {
     deleteDistributor: (
         distributorId: string,
     ) => Promise<void>;
+
+    setPizzaImageUpdatedAt: (
+        pizzaId: string,
+        imageUpdatedAt: string | null,
+    ) => void;
 
     clearError: () => void;
 }
@@ -311,6 +317,22 @@ export function SettingsProvider({
         [executeCatalogMutation],
     );
 
+    const setPizzaImageUpdatedAt = useCallback(
+        (
+            pizzaId: string,
+            imageUpdatedAt: string | null,
+        ): void => {
+            setSettings((currentSettings) =>
+                updatePizzaImageUpdatedAt(
+                    currentSettings,
+                    pizzaId,
+                    imageUpdatedAt,
+                ),
+            );
+        },
+        [],
+    );
+
     const clearError = useCallback(() => {
         setError(null);
     }, []);
@@ -331,6 +353,7 @@ export function SettingsProvider({
             addDistributor,
             updateDistributor,
             deleteDistributor,
+            setPizzaImageUpdatedAt,
             clearError,
         }),
         [
@@ -345,6 +368,7 @@ export function SettingsProvider({
             isSaving,
             reloadSettings,
             settings,
+            setPizzaImageUpdatedAt,
             updateDistributor,
             deleteDistributor,
             updateIngredient,

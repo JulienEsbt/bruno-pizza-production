@@ -143,8 +143,13 @@ export const request = async (
 export const requestJson = async (
     path: string,
     init: RequestInit = {},
+    timeoutMs = DEFAULT_TIMEOUT_MS,
 ): Promise<unknown> => {
-    const response = await request(path, init);
+    const response = await request(
+        path,
+        init,
+        timeoutMs,
+    );
 
     try {
         return await response.json();

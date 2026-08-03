@@ -1,7 +1,7 @@
 {
   "name": "bruno-pizza-production",
   "productName": "Bruno Pizza",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Application desktop locale de pilotage de la production Bruno Pizza.",
   "author": "Julien Esterbet",
   "license": "MIT",
