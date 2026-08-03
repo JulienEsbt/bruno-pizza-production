@@ -1,105 +1,110 @@
+[English](README.md) · [Français](README.fr.md)
+
 <div align="center">
-  <img src="docs/assets/brand/logo-bruno-pizzaiolo.png" alt="Logo Bruno Pizzaiolo" width="260" />
+  <img src="docs/assets/brand/logo-bruno-pizzaiolo.png" alt="Bruno Pizzaiolo logo" width="260" />
 
   # Bruno Pizza — Production
 
-  **Application desktop locale pour transformer un plan de production Excel en parcours de fabrication clair et exploitable en atelier.**
+  **A local-first desktop application that turns Excel production plans into a clear, practical manufacturing workflow.**
 
   React · TypeScript · Electron · Express · SQLite
 </div>
 
-## Le projet
+## Overview
 
-Bruno Pizza répond à un besoin concret : préparer une production répartie
-entre plusieurs distributeurs, puis guider sa fabrication pizza par pizza.
-L’application importe un fichier Excel, le rapproche d’un catalogue métier et
-propose trois espaces complémentaires :
+Bruno Pizza was built for a real operational need and is installed in an active
+production environment. It helps prepare production across several distributors
+and guides operators through the manufacturing process one pizza at a time.
 
-- un **tableau de production** avec les quantités par variété et distributeur ;
-- un **parcours atelier** avec recette, photo, progression et navigation ;
-- des **paramètres métier** pour gérer pizzas, ingrédients et distributeurs.
+The application imports an Excel production plan, validates it against a local
+business catalog and provides three complementary workspaces:
 
-La version 1.1.3 fonctionne entièrement en local. Excel reste l’unique source
-de production ; l’intégration Adial n’entre pas encore dans son périmètre.
+- a **production dashboard** with quantities by product and distributor;
+- a **workshop workflow** with recipes, photos, progress tracking and keyboard
+  navigation;
+- **business settings** for pizzas, ingredients and distributors.
 
-## Points forts
+Version 1.1.3 runs entirely on the user's computer. Excel remains the only
+production source; direct Adial integration is not part of the current scope.
 
-- import et validation d’un plan de production `.xlsx` ou `.xls` ;
-- contrôle des en-têtes, doublons, quantités et totaux avant affichage ;
-- catalogue SQLite modifiable avec recettes ordonnées et photos ;
-- interface sombre ou claire, pilotable au clavier et zoomable ;
-- persistance locale séparée des fichiers installés ;
-- serveur Express limité à `127.0.0.1` avec port desktop dynamique ;
-- origine Electron stable pour préserver la session entre les lancements ;
-- tests frontend, backend et desktop exécutés automatiquement par GitHub.
+## Product highlights
 
-## Aperçu
+- imports and validates `.xlsx` and `.xls` production plans;
+- checks headers, duplicates, quantities and totals before displaying data;
+- provides an editable SQLite catalog with ordered recipes and product photos;
+- supports light and dark themes, keyboard controls and interface zoom;
+- keeps user data separate from installed application files;
+- binds the Express server to `127.0.0.1` and selects a free desktop port;
+- uses a stable internal Electron origin to preserve the local session;
+- runs frontend, backend and desktop tests in GitHub Actions;
+- is documented, packaged and distributed for Windows and macOS.
 
-Captures réalisées avec des données locales de démonstration.
+## Screenshots
 
-| Tableau de production | Parcours de fabrication |
+The screenshots use local demonstration data.
+
+| Production dashboard | Manufacturing workflow |
 | --- | --- |
-| ![Tableau de production avec les quantités par distributeur](docs/assets/screenshots/dashboard-dark.png) | ![Parcours de fabrication avec recette et photo de la pizza](docs/assets/screenshots/production-dark.png) |
+| ![Production dashboard showing quantities by distributor](docs/assets/screenshots/dashboard-dark.png) | ![Manufacturing workflow showing a pizza recipe and photo](docs/assets/screenshots/production-dark.png) |
 
-| Catalogue des pizzas | Gestion des distributeurs |
+| Pizza catalog | Distributor settings |
 | --- | --- |
-| ![Configuration d'une pizza, de sa recette et de son visuel](docs/assets/screenshots/settings-pizzas-dark.png) | ![Configuration des distributeurs et de leurs couleurs](docs/assets/screenshots/settings-distributors-light.png) |
+| ![Pizza configuration with its recipe and visual](docs/assets/screenshots/settings-pizzas-dark.png) | ![Distributor settings and color configuration](docs/assets/screenshots/settings-distributors-light.png) |
 
 <details>
-  <summary>Voir la galerie complète</summary>
+  <summary>View the complete gallery</summary>
 
-| Import Excel | Tableau clair |
+| Excel import | Light dashboard |
 | --- | --- |
-| ![État du tableau avant import d'un fichier Excel](docs/assets/screenshots/dashboard-empty-dark.png) | ![Tableau de production en thème clair](docs/assets/screenshots/dashboard-light.png) |
+| ![Dashboard before importing an Excel file](docs/assets/screenshots/dashboard-empty-dark.png) | ![Production dashboard in the light theme](docs/assets/screenshots/dashboard-light.png) |
 
-| Import Excel clair | Parcours clair |
+| Light Excel import | Light workflow |
 | --- | --- |
-| ![État du tableau avant import en thème clair](docs/assets/screenshots/dashboard-empty-light.png) | ![Parcours de fabrication en thème clair](docs/assets/screenshots/production-light.png) |
+| ![Dashboard before import in the light theme](docs/assets/screenshots/dashboard-empty-light.png) | ![Manufacturing workflow in the light theme](docs/assets/screenshots/production-light.png) |
 
-| Production terminée | Production terminée en clair |
+| Completed production | Completed production in light mode |
 | --- | --- |
-| ![Bilan d'une production terminée en thème sombre](docs/assets/screenshots/production-complete-dark.png) | ![Bilan d'une production terminée en thème clair](docs/assets/screenshots/production-complete-light.png) |
+| ![Completed production summary in the dark theme](docs/assets/screenshots/production-complete-dark.png) | ![Completed production summary in the light theme](docs/assets/screenshots/production-complete-light.png) |
 
-| Configuration pizza claire | Ingrédients |
+| Light pizza settings | Ingredient settings |
 | --- | --- |
-| ![Configuration d'une pizza en thème clair](docs/assets/screenshots/settings-pizzas-light.png) | ![Gestion des ingrédients en thème sombre](docs/assets/screenshots/settings-ingredients-dark.png) |
+| ![Pizza configuration in the light theme](docs/assets/screenshots/settings-pizzas-light.png) | ![Ingredient settings in the dark theme](docs/assets/screenshots/settings-ingredients-dark.png) |
 
-| Ingrédients clairs | Distributeurs |
+| Light ingredient settings | Distributor settings |
 | --- | --- |
-| ![Gestion des ingrédients en thème clair](docs/assets/screenshots/settings-ingredients-light.png) | ![Gestion des distributeurs en thème sombre](docs/assets/screenshots/settings-distributors-dark.png) |
+| ![Ingredient settings in the light theme](docs/assets/screenshots/settings-ingredients-light.png) | ![Distributor settings in the dark theme](docs/assets/screenshots/settings-distributors-dark.png) |
 </details>
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    Excel["Plan de production Excel"] -->|"lecture et validation locales"| UI["React + TypeScript"]
-    UI -->|"API locale"| API["Express"]
+    Excel["Excel production plan"] -->|"local parsing and validation"| UI["React + TypeScript"]
+    UI -->|"local API"| API["Express"]
     API --> DB["SQLite"]
-    API --> Images["Photos des pizzas"]
-    Electron["Fenêtre Electron"] --> UI
-    Electron -->|"démarre sur un port libre"| API
+    API --> Images["Pizza photos"]
+    Electron["Electron window"] --> UI
+    Electron -->|"starts on a free port"| API
 ```
 
-En développement, Vite et Express fonctionnent séparément. Dans l’application
-desktop, Electron démarre le backend local et affiche le frontend compilé via
-l’origine interne `bruno-pizza://app`.
+During web development, Vite and Express run separately. In the packaged
+desktop application, Electron starts the local backend and serves the compiled
+frontend through the internal `bruno-pizza://app` origin.
 
-## Essayer l’application
+## Download
 
-La page [Releases](https://github.com/JulienEsbt/bruno-pizza-production/releases)
-contient les livraisons disponibles :
+The [Releases](https://github.com/JulienEsbt/bruno-pizza-production/releases)
+page contains the available builds:
 
-- `Appli-Montage-Setup-1.1.3.exe` pour Windows Intel/AMD 64 bits ;
-- `Appli-Montage-1.1.3-macOS-Apple-Silicon.zip` pour les Mac M1 et suivants.
+- `Appli-Montage-Setup-1.1.3.exe` for 64-bit Intel/AMD Windows systems;
+- `Appli-Montage-1.1.3-macOS-Apple-Silicon.zip` for Apple Silicon Macs.
 
-Ces versions sont actuellement non signées et destinées aux tests. Windows
-SmartScreen ou macOS Gatekeeper peut donc demander une confirmation au premier
-lancement.
+The current builds are not code-signed. Windows SmartScreen or macOS Gatekeeper
+may therefore ask for confirmation on first launch.
 
-## Installation du projet source
+## Run from source
 
-Prérequis : Git, Node.js 22.5 ou supérieur et npm 10 ou supérieur.
+Requirements: Git, Node.js 22.5 or later and npm 10 or later.
 
 ```bash
 git clone https://github.com/JulienEsbt/bruno-pizza-production.git
@@ -110,9 +115,9 @@ cp frontend/.env.example frontend/.env
 cp backend/.env.example backend/.env
 ```
 
-### Développement web
+### Web development
 
-Lancer le backend et le frontend dans deux terminaux :
+Start the backend and frontend in separate terminals:
 
 ```bash
 npm run dev:backend
@@ -122,59 +127,63 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
-L’interface est accessible sur `http://localhost:5173` et l’API sur
+The interface is available at `http://localhost:5173` and the API at
 `http://127.0.0.1:3001`.
 
-### Développement desktop
+### Desktop development
 
-Pour construire puis ouvrir l’application Electron depuis les sources :
+Build and open the Electron application from source:
 
 ```bash
 npm run desktop:start
 ```
 
-## Qualité et construction
+## Quality and packaging
 
-| Commande | Rôle |
+| Command | Purpose |
 | --- | --- |
-| `npm run check` | Exécute le lint, le typage et les tests |
-| `npm run build` | Construit le frontend et le backend |
-| `npm run release:check` | Valide intégralement une livraison |
-| `npm run desktop:package` | Produit un paquet pour le système courant |
-| `npm run make:windows` | Produit l’installateur Windows depuis Windows |
-| `npm start` | Sert le frontend compilé et l’API dans un seul processus |
+| `npm run check` | Run linting, type checks and tests |
+| `npm run build` | Build the frontend and backend |
+| `npm run release:check` | Validate a complete release candidate |
+| `npm run desktop:package` | Package the application for the current system |
+| `npm run make:windows` | Build the Windows installer on Windows |
+| `npm start` | Serve the compiled frontend and local API together |
 
-## Données locales
+The continuous integration workflow runs the full release check on pushes and
+pull requests targeting `main`.
 
-Le dépôt ne contient aucune base utilisateur, photo de production, variable
-d’environnement réelle ou feuille Excel importée.
+## Local data
 
-| Mode | Emplacement des données |
+The repository contains no user database, imported Excel production plan,
+production photo or real environment variable. The initial business catalog is
+versioned intentionally so a fresh installation is usable immediately.
+
+| Mode | Data location |
 | --- | --- |
-| Projet source | `backend/data/` |
-| Windows | `%APPDATA%\Bruno Pizza\data\` (conservé pour les mises à jour) |
-| macOS | `~/Library/Application Support/Bruno Pizza/data/` (conservé pour les mises à jour) |
+| Source project | `backend/data/` |
+| Windows | `%APPDATA%\Bruno Pizza\data\` |
+| macOS | `~/Library/Application Support/Bruno Pizza/data/` |
 
-Une nouvelle base est automatiquement créée depuis le catalogue initial lors
-du premier lancement. Une mise à jour du programme réutilise les données déjà
-présentes sans les inclure dans l’installateur.
+The application creates a new database from the initial catalog on first
+launch. Program updates reuse existing data and do not include it in the
+installer.
 
 ## Documentation
 
-- [Guide utilisateur](docs/GUIDE_UTILISATEUR.md)
-- [Format du fichier Excel](docs/FORMAT_EXCEL.md)
-- [Installation et exploitation](docs/INSTALLATION_ET_EXPLOITATION.md)
-- [Architecture technique](docs/ARCHITECTURE_TECHNIQUE.md)
-- [Historique des versions](CHANGELOG.md)
+- [User guide — French](docs/GUIDE_UTILISATEUR.md)
+- [Excel format — French](docs/FORMAT_EXCEL.md)
+- [Installation and operations — French](docs/INSTALLATION_ET_EXPLOITATION.md)
+- [Technical architecture — French](docs/ARCHITECTURE_TECHNIQUE.md)
+- [Changelog](CHANGELOG.md)
 
-## Sécurité
+## Security scope
 
-Cette application est conçue pour un usage local de confiance. Son serveur ne
-doit pas être exposé directement sur Internet ou sur un réseau non maîtrisé
-sans authentification, HTTPS et règles réseau supplémentaires.
+This application is designed for trusted local use. Its Express server must not
+be exposed directly to the Internet or to an untrusted network without adding
+authentication, HTTPS and appropriate network controls.
 
-## Licence
+## License
 
-Ce projet est distribué sous licence [MIT](LICENSE).
+This project is available under the [MIT License](LICENSE).
 
 © 2026 Julien Esterbet
