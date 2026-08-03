@@ -23,6 +23,12 @@ l’application desktop, le processus principal Electron démarre Express sur
 statique du frontend et l’API depuis ce même port. Cette configuration évite
 une dépendance à une URL d’API codée en dur et les collisions de port.
 
+La fenêtre utilise toujours l’origine `bruno-pizza://app`. Un gestionnaire de
+protocole interne relaie ses requêtes vers le port Express courant. Le port peut
+donc changer sans changer l’origine du stockage navigateur : la production
+importée, le thème et la position du parcours restent disponibles au prochain
+démarrage.
+
 Le rendu Electron est isolé, sans accès Node, sans `webview` et sans ouverture
 de navigation externe. Les permissions navigateur sont refusées par défaut.
 

@@ -1,10 +1,23 @@
-import { app, BrowserWindow, dialog, session } from "electron";
+import {
+    app,
+    BrowserWindow,
+    dialog,
+    net,
+    protocol,
+    session,
+} from "electron";
 import electronSquirrelStartup from "electron-squirrel-startup";
 
 import {
     configureDesktopBackendEnvironment,
     resolveDesktopPaths,
 } from "./backendEnvironment.mjs";
+import {
+    DESKTOP_ENTRY_URL,
+    DESKTOP_SCHEME,
+    getBackendProxyUrl,
+    isDesktopNavigation,
+} from "./protocolRouting.mjs";
 
 const APP_USER_MODEL_ID =
     "com.squirrel.BrunoPizza.BrunoPizza";
@@ -13,6 +26,20 @@ let mainWindow;
 let runningServer;
 let database;
 let quitAfterCleanup = false;
+
+protocol.registerSchemesAsPrivileged([
+    {
+        scheme: DESKTOP_SCHEME,
+        privileges: {
+            standard: true,
+            secure: true,
+            supportFetchAPI: true,
+            corsEnabled: true,
+            stream: true,
+            codeCache: true,
+        },
+    },
+]);
 
 const configureBackend = () => {
     const desktopPaths = resolveDesktopPaths({
@@ -41,17 +68,45 @@ const startBackend = async () => {
     });
 };
 
-const isBackendNavigation = (
-    candidateUrl,
-) => {
-    try {
-        return (
-            new URL(candidateUrl).origin ===
-            runningServer?.origin
-        );
-    } catch {
-        return false;
-    }
+const registerDesktopProtocol = async () => {
+    await protocol.handle(
+        DESKTOP_SCHEME,
+        (request) => {
+            if (!runningServer) {
+                return new Response(
+                    "Le serveur local n’est pas disponible.",
+                    { status: 503 },
+                );
+            }
+
+            let backendUrl;
+
+            try {
+                backendUrl = getBackendProxyUrl(
+                    request.url,
+                    runningServer.origin,
+                );
+            } catch {
+                return new Response(
+                    "Origine desktop invalide.",
+                    { status: 403 },
+                );
+            }
+
+            const method = request.method.toUpperCase();
+            const canHaveBody =
+                method !== "GET" && method !== "HEAD";
+
+            return net.fetch(backendUrl, {
+                method,
+                headers: request.headers,
+                ...(canHaveBody
+                    ? { body: request.body }
+                    : {}),
+                bypassCustomProtocolHandlers: true,
+            });
+        },
+    );
 };
 
 const createMainWindow = async () => {
@@ -94,13 +149,13 @@ const createMainWindow = async () => {
     window.webContents.on(
         "will-navigate",
         (event, navigationUrl) => {
-            if (!isBackendNavigation(navigationUrl)) {
+            if (!isDesktopNavigation(navigationUrl)) {
                 event.preventDefault();
             }
         },
     );
 
-    await window.loadURL(runningServer.origin);
+    await window.loadURL(DESKTOP_ENTRY_URL);
 
     mainWindow = window;
 };
@@ -144,6 +199,7 @@ const bootApplication = async () => {
     );
 
     await startBackend();
+    await registerDesktopProtocol();
     await createMainWindow();
 };
 
