@@ -9,6 +9,8 @@ import type {
     PizzaBase,
 } from "../../../types/settings";
 
+import "./SettingsCreateDialog.css";
+
 type SettingsCreateTab =
     | "pizzas"
     | "ingredients"

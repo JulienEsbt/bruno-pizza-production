@@ -1,11 +1,17 @@
 import {
+    type KeyboardEvent,
     useMemo,
+    useState,
 } from "react";
 
 import type {
     DistributorCatalogItem,
     DistributorCatalogUpdate,
 } from "../../../types/settings";
+import ActivationControl from "./ActivationControl";
+
+import "./CatalogTable.css";
+import "./DistributorSettingsPanel.css";
 
 interface DistributorSettingsPanelProps {
     distributors: DistributorCatalogItem[];
@@ -16,7 +22,7 @@ interface DistributorSettingsPanelProps {
         update: DistributorCatalogUpdate,
     ) => Promise<void>;
     onDelete: (
-        distributorId: string,
+        distributor: DistributorCatalogItem,
     ) => Promise<void>;
 }
 
@@ -28,6 +34,9 @@ const normalizeShortName = (
         .replace(/\s+/g, "")
         .toLocaleUpperCase("fr-FR");
 
+const DISTRIBUTOR_DRAG_DATA_TYPE =
+    "application/x-bruno-pizza-distributor";
+
 export default function DistributorSettingsPanel({
     distributors,
     search,
@@ -35,6 +44,11 @@ export default function DistributorSettingsPanel({
     onUpdate,
     onDelete,
 }: DistributorSettingsPanelProps) {
+    const [draggedDistributorId, setDraggedDistributorId] =
+        useState<string | null>(null);
+    const [dragTargetDistributorId, setDragTargetDistributorId] =
+        useState<string | null>(null);
+
     const displayedDistributors = useMemo(() => {
         const normalizedSearch = search
             .trim()
@@ -65,19 +79,94 @@ export default function DistributorSettingsPanel({
         search,
     ]);
 
+    const resetDistributorDrag = (): void => {
+        setDraggedDistributorId(null);
+        setDragTargetDistributorId(null);
+    };
+
+    const moveDistributor = async (
+        distributorId: string,
+        targetDistributorId: string,
+    ): Promise<void> => {
+        if (
+            distributorId === targetDistributorId ||
+            isSaving
+        ) {
+            resetDistributorDrag();
+            return;
+        }
+
+        const targetDistributor = distributors.find(
+            (distributor) =>
+                distributor.id === targetDistributorId,
+        );
+
+        if (!targetDistributor) {
+            resetDistributorDrag();
+            return;
+        }
+
+        resetDistributorDrag();
+
+        try {
+            await onUpdate(distributorId, {
+                order: targetDistributor.order,
+            });
+        } catch {
+            // L’erreur est déjà affichée par le contexte.
+        }
+    };
+
+    const handleOrderKeyDown = (
+        event: KeyboardEvent<HTMLButtonElement>,
+        distributor: DistributorCatalogItem,
+    ): void => {
+        if (
+            event.key !== "ArrowUp" &&
+            event.key !== "ArrowDown"
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (isSaving) {
+            return;
+        }
+
+        const currentIndex =
+            displayedDistributors.findIndex(
+                (currentDistributor) =>
+                    currentDistributor.id ===
+                    distributor.id,
+            );
+        const targetIndex =
+            currentIndex +
+            (event.key === "ArrowUp" ? -1 : 1);
+        const targetDistributor =
+            displayedDistributors[targetIndex];
+
+        if (targetDistributor) {
+            void moveDistributor(
+                distributor.id,
+                targetDistributor.id,
+            );
+        }
+    };
+
     return (
         <section className="settings-catalog settings-catalog--single-bar">
             <div className="settings-catalog__table">
                 <table className="settings-distributor-table">
                     <thead>
                         <tr>
+                            <th>Ordre</th>
                             <th>État</th>
                             <th>Aperçu</th>
                             <th>Nom affiché</th>
                             <th>Nom Excel</th>
                             <th>Abréviation</th>
                             <th>Couleurs</th>
-                            <th>Ordre</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -86,41 +175,128 @@ export default function DistributorSettingsPanel({
                         {displayedDistributors.map(
                             (distributor) => (
                                 <tr
+                                    className={[
+                                        "settings-distributor-row",
+                                        draggedDistributorId ===
+                                        distributor.id
+                                            ? "settings-distributor-row--dragging"
+                                            : "",
+                                        dragTargetDistributorId ===
+                                            distributor.id &&
+                                        draggedDistributorId !==
+                                            distributor.id
+                                            ? "settings-distributor-row--drag-target"
+                                            : "",
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ")}
                                     key={
                                         distributor.id
                                     }
-                                >
-                                    <td>
-                                        <label className="settings-toggle">
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    distributor.active
-                                                }
-                                                disabled={
-                                                    isSaving
-                                                }
-                                                onChange={(
-                                                    event,
-                                                ) =>
-                                                    void onUpdate(
-                                                        distributor.id,
-                                                        {
-                                                            active:
-                                                                event
-                                                                    .target
-                                                                    .checked,
-                                                        },
-                                                    )
-                                                }
-                                            />
+                                    onDragEnter={(event) => {
+                                        event.preventDefault();
 
-                                            <span>
-                                                {distributor.active
-                                                    ? "Actif"
-                                                    : "Inactif"}
+                                        if (
+                                            draggedDistributorId &&
+                                            draggedDistributorId !==
+                                                distributor.id
+                                        ) {
+                                            setDragTargetDistributorId(
+                                                distributor.id,
+                                            );
+                                        }
+                                    }}
+                                    onDragOver={(event) => {
+                                        event.preventDefault();
+                                        event.dataTransfer.dropEffect =
+                                            "move";
+                                    }}
+                                    onDrop={(event) => {
+                                        event.preventDefault();
+
+                                        const droppedDistributorId =
+                                            event.dataTransfer.getData(
+                                                DISTRIBUTOR_DRAG_DATA_TYPE,
+                                            ) ||
+                                            draggedDistributorId;
+
+                                        if (
+                                            droppedDistributorId
+                                        ) {
+                                            void moveDistributor(
+                                                droppedDistributorId,
+                                                distributor.id,
+                                            );
+                                        }
+                                    }}
+                                >
+                                    <td className="settings-distributor-order-cell">
+                                        <button
+                                            className="settings-distributor-order"
+                                            type="button"
+                                            draggable={
+                                                !isSaving
+                                            }
+                                            disabled={isSaving}
+                                            aria-label={`Déplacer ${distributor.name}. Utilisez le glisser-déposer ou les flèches haut et bas.`}
+                                            aria-keyshortcuts="ArrowUp ArrowDown"
+                                            title="Maintenir et faire glisser"
+                                            onDragStart={(
+                                                event,
+                                            ) => {
+                                                setDraggedDistributorId(
+                                                    distributor.id,
+                                                );
+                                                event.dataTransfer.effectAllowed =
+                                                    "move";
+                                                event.dataTransfer.setData(
+                                                    DISTRIBUTOR_DRAG_DATA_TYPE,
+                                                    distributor.id,
+                                                );
+                                            }}
+                                            onDragEnd={
+                                                resetDistributorDrag
+                                            }
+                                            onKeyDown={(
+                                                event,
+                                            ) =>
+                                                handleOrderKeyDown(
+                                                    event,
+                                                    distributor,
+                                                )
+                                            }
+                                        >
+                                            <span aria-hidden="true">
+                                                ⠿
                                             </span>
-                                        </label>
+
+                                            <strong>
+                                                {
+                                                    distributor.order
+                                                }
+                                            </strong>
+                                        </button>
+                                    </td>
+
+                                    <td>
+                                        <ActivationControl
+                                            active={
+                                                distributor.active
+                                            }
+                                            disabled={
+                                                isSaving
+                                            }
+                                            onChange={(
+                                                active,
+                                            ) =>
+                                                void onUpdate(
+                                                    distributor.id,
+                                                    {
+                                                        active,
+                                                    },
+                                                )
+                                            }
+                                        />
                                     </td>
 
                                     <td>
@@ -279,7 +455,7 @@ export default function DistributorSettingsPanel({
                                                 disabled={
                                                     isSaving
                                                 }
-                                                onInput={(
+                                                onChange={(
                                                     event,
                                                 ) =>
                                                     void onUpdate(
@@ -307,7 +483,7 @@ export default function DistributorSettingsPanel({
                                                 disabled={
                                                     isSaving
                                                 }
-                                                onInput={(
+                                                onChange={(
                                                     event,
                                                 ) =>
                                                     void onUpdate(
@@ -335,7 +511,7 @@ export default function DistributorSettingsPanel({
                                                 disabled={
                                                     isSaving
                                                 }
-                                                onInput={(
+                                                onChange={(
                                                     event,
                                                 ) =>
                                                     void onUpdate(
@@ -354,78 +530,15 @@ export default function DistributorSettingsPanel({
                                     </td>
 
                                     <td>
-                                        <div className="settings-order-controls">
-                                            <button
-                                                className="settings-order-button"
-                                                type="button"
-                                                disabled={
-                                                    isSaving ||
-                                                    distributor.order <=
-                                                        1
-                                                }
-                                                onClick={() =>
-                                                    void onUpdate(
-                                                        distributor.id,
-                                                        {
-                                                            order:
-                                                                distributor.order -
-                                                                1,
-                                                        },
-                                                    )
-                                                }
-                                            >
-                                                ↑
-                                            </button>
-
-                                            <span className="settings-order-value">
-                                                {
-                                                    distributor.order
-                                                }
-                                            </span>
-
-                                            <button
-                                                className="settings-order-button"
-                                                type="button"
-                                                disabled={
-                                                    isSaving ||
-                                                    distributor.order >=
-                                                        distributors.length
-                                                }
-                                                onClick={() =>
-                                                    void onUpdate(
-                                                        distributor.id,
-                                                        {
-                                                            order:
-                                                                distributor.order +
-                                                                1,
-                                                        },
-                                                    )
-                                                }
-                                            >
-                                                ↓
-                                            </button>
-                                        </div>
-                                    </td>
-
-                                    <td>
                                         <button
                                             className="settings-delete-button"
                                             type="button"
                                             disabled={isSaving}
-                                            onClick={() => {
-                                                const confirmed =
-                                                    window.confirm(
-                                                        `Supprimer définitivement le distributeur « ${distributor.name || distributor.shortName} » ?`,
-                                                    );
-
-                                                if (!confirmed) {
-                                                    return;
-                                                }
-
+                                            onClick={() =>
                                                 void onDelete(
-                                                    distributor.id,
-                                                );
-                                            }}
+                                                    distributor,
+                                                )
+                                            }
                                         >
                                             Supprimer
                                         </button>

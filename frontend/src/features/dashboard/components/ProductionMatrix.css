@@ -1,0 +1,519 @@
+.production-matrix {
+    height: 100%;
+    min-height: 360px;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 88%
+            ),
+            var(--surface) 38%
+        );
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--primary),
+            var(--border) 72%
+        );
+    border-radius: 20px;
+    box-shadow:
+        0 14px 34px
+            color-mix(
+                in srgb,
+                #071428,
+                transparent 88%
+            ),
+        inset 0 1px 0
+            color-mix(
+                in srgb,
+                #fff,
+                transparent 84%
+            );
+}
+
+.production-matrix--empty {
+    min-height: 420px;
+    padding: 0;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.production-matrix__dropzone {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 9px;
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    padding: 34px;
+    color: var(--text-muted);
+    background:
+        radial-gradient(
+            circle at center,
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                transparent 44%
+            ),
+            transparent 52%
+        );
+    border: 0;
+    border-radius: inherit;
+    cursor: pointer;
+    font: inherit;
+    transition:
+        background 160ms ease,
+        box-shadow 160ms ease,
+        transform 160ms ease;
+}
+
+.production-matrix__dropzone:hover:not(:disabled),
+.production-matrix__dropzone:focus-visible,
+.production-matrix--drag-active
+    .production-matrix__dropzone {
+    background:
+        radial-gradient(
+            circle at center,
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 18%
+            ),
+            transparent 62%
+        );
+    box-shadow: inset 0 0 0 3px
+        color-mix(
+            in srgb,
+            var(--primary),
+            transparent 42%
+        );
+}
+
+.production-matrix--drag-active
+    .production-matrix__dropzone {
+    transform: scale(0.995);
+}
+
+.production-matrix__dropzone:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.production-matrix__dropzone-icon {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    color: var(--primary);
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 82%
+            ),
+            var(--primary-soft)
+        );
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--primary),
+            transparent 62%
+        );
+    border-radius: 22px;
+    box-shadow: 0 12px 28px
+        color-mix(
+            in srgb,
+            var(--primary),
+            transparent 84%
+        );
+    font-size: 2.35rem;
+    font-weight: 800;
+}
+
+.production-matrix__dropzone h2,
+.production-matrix__dropzone p,
+.production-matrix__dropzone strong,
+.production-matrix__dropzone small {
+    margin: 0;
+}
+
+.production-matrix__dropzone h2 {
+    color: var(--app-text);
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.production-matrix__dropzone p {
+    max-width: 520px;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.production-matrix__dropzone strong {
+    min-width: 220px;
+    margin-top: 8px;
+    padding: 11px 18px;
+    color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            color-mix(
+                in srgb,
+                var(--primary),
+                #fff 16%
+            )
+        );
+    border-radius: 12px;
+    box-shadow: 0 9px 20px
+        color-mix(
+            in srgb,
+            var(--primary),
+            transparent 78%
+        );
+}
+
+.production-matrix__dropzone small {
+    color: var(--text-muted);
+    font-weight: 750;
+}
+
+.production-matrix__scroll {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+.production-matrix table {
+    width: 100%;
+    min-width: 920px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.production-matrix th,
+.production-matrix td {
+    height: 58px;
+    padding: 8px 14px;
+    border-right: 1px solid
+        color-mix(
+            in srgb,
+            var(--primary),
+            var(--border) 88%
+        );
+    border-bottom: 1px solid
+        color-mix(
+            in srgb,
+            var(--primary),
+            var(--border) 90%
+        );
+    text-align: center;
+    transition: background 120ms ease;
+}
+
+.production-matrix tr > :last-child {
+    border-right: 0;
+}
+
+.production-matrix thead {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.production-matrix thead th {
+    color: var(--app-text);
+    background:
+        linear-gradient(
+            150deg,
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface-subtle) 72%
+            ),
+            var(--surface-subtle)
+        );
+    box-shadow:
+        inset 0 1px 0
+            color-mix(
+                in srgb,
+                #fff,
+                transparent 82%
+            ),
+        inset 0 -2px 0
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 84%
+            );
+    font-size: 1.02rem;
+    font-weight: 900;
+    letter-spacing: 0.015em;
+}
+
+.production-matrix__recipe-column {
+    left: 0;
+    z-index: 4;
+    width: 24%;
+    min-width: 235px;
+    border-top-left-radius: 19px;
+    font-size: 1.06rem !important;
+    text-align: left;
+}
+
+.production-matrix__total-column {
+    width: 94px;
+    color: var(--primary) !important;
+    background:
+        linear-gradient(
+            150deg,
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 83%
+            ),
+            var(--primary-soft)
+        ) !important;
+    font-size: 1.08rem !important;
+}
+
+.production-matrix__distributor-header {
+    min-width: 94px;
+    border-bottom-width: 5px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.28),
+        inset 0 -2px 0 rgba(6, 18, 39, 0.1);
+    font-size: 1.06rem !important;
+    letter-spacing: 0.04em !important;
+    text-shadow: 0 1px 1px
+        rgba(6, 18, 39, 0.12);
+}
+
+.production-matrix th.production-matrix__column--hovered,
+.production-matrix td.production-matrix__column--hovered {
+    box-shadow:
+        inset 0 0 0 999px
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 93%
+            ),
+        inset 2px 0 0
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 58%
+            ),
+        inset -2px 0 0
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 58%
+            );
+}
+
+.production-matrix tbody tr:hover
+    .production-matrix__column--hovered {
+    box-shadow:
+        inset 0 0 0 999px
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 85%
+            ),
+        inset 2px 0 0 var(--primary),
+        inset -2px 0 0 var(--primary);
+}
+
+.production-matrix thead
+    tr
+    > :last-child {
+    border-top-right-radius: 19px;
+}
+
+.production-matrix tbody tr:hover td,
+.production-matrix tbody tr:hover th {
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 38%
+            ),
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 66%
+            )
+        );
+    box-shadow: inset 0 1px 0
+        color-mix(
+            in srgb,
+            var(--primary),
+            transparent 82%
+        );
+}
+
+.production-matrix tbody tr:nth-child(even) td,
+.production-matrix tbody tr:nth-child(even) th {
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(
+                in srgb,
+                var(--surface-subtle),
+                var(--surface) 38%
+            ),
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 92%
+            )
+        );
+}
+
+.production-matrix__pizza-name {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 235px;
+    color: var(--app-text);
+    background: var(--surface);
+    font-size: clamp(0.98rem, 1.25vw, 1.18rem);
+    font-weight: 950;
+    letter-spacing: -0.015em;
+    text-align: left;
+}
+
+.production-matrix tbody
+    .production-matrix__pizza-total {
+    color: var(--primary);
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 88%
+            ),
+            var(--primary-soft)
+        );
+    font-size: 1.52rem;
+    font-weight: 950;
+}
+
+.production-matrix__quantity {
+    background:
+        radial-gradient(
+            circle at center,
+            color-mix(
+                in srgb,
+                currentColor,
+                transparent 94%
+            ),
+            transparent 66%
+        );
+    font-size: 1.32rem;
+    font-weight: 950;
+}
+
+.production-matrix__quantity--zero {
+    color: var(--text-muted);
+    opacity: 0.48;
+}
+
+.production-matrix tbody tr:hover
+    .production-matrix__pizza-name,
+.production-matrix tbody tr:hover
+    .production-matrix__pizza-total,
+.production-matrix tbody tr:hover
+    .production-matrix__quantity {
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 36%
+            ),
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 68%
+            )
+        );
+}
+
+.production-matrix tfoot {
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+}
+
+.production-matrix tfoot th,
+.production-matrix tfoot td {
+    height: 58px;
+    color: var(--app-text);
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 28%
+            ),
+            var(--surface-strong)
+        );
+    border-top: 3px solid var(--primary);
+    border-bottom: 0;
+    font-size: 1.24rem;
+    font-weight: 950;
+    box-shadow: inset 0 1px 0
+        color-mix(
+            in srgb,
+            #fff,
+            transparent 82%
+        );
+}
+
+.production-matrix tfoot th {
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    border-bottom-left-radius: 19px;
+    text-align: left;
+}
+
+.production-matrix tfoot td:nth-child(2) {
+    color: var(--primary);
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(
+                in srgb,
+                var(--primary),
+                transparent 84%
+            ),
+            var(--primary-soft)
+        );
+    font-size: 1.55rem;
+}
+
+.production-matrix tfoot
+    tr
+    > :last-child {
+    border-bottom-right-radius: 19px;
+}
+
+@media (max-width: 620px) {
+    .production-matrix {
+        min-height: 480px;
+    }
+}

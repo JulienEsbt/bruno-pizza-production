@@ -1,3 +1,9 @@
+import KeyboardShortcutLegend, {
+    type KeyboardShortcutItem,
+} from "../../../components/keyboard/KeyboardShortcutLegend";
+
+import "./ProductionComplete.css";
+
 interface DistributorSummary {
     id: string;
     name: string;
@@ -12,6 +18,25 @@ interface ProductionCompleteProps {
     onReturnToDashboard: () => void;
     onClose: () => void;
 }
+
+const PRODUCTION_COMPLETE_SHORTCUTS = [
+    {
+        key: "R",
+        label: "Recommencer",
+    },
+    {
+        key: "Entrée",
+        label: "Dashboard",
+    },
+    {
+        key: "Échap",
+        label: "Fermer",
+    },
+    {
+        key: "T",
+        label: "Thème",
+    },
+] satisfies KeyboardShortcutItem[];
 
 export default function ProductionComplete({
     totalQuantity,
@@ -36,6 +61,7 @@ export default function ProductionComplete({
                     className="production-complete__close"
                     type="button"
                     aria-label="Fermer le récapitulatif"
+                    aria-keyshortcuts="Escape"
                     onClick={onClose}
                 >
                     ×
@@ -132,27 +158,18 @@ export default function ProductionComplete({
                     </div>
                 )}
 
-                <div className="production-complete__shortcuts">
-                    <span>
-                        <kbd>Retour arrière</kbd>
-                        Recommencer
-                    </span>
-
-                    <span>
-                        <kbd>Entrée</kbd>
-                        Retour au tableau
-                    </span>
-
-                    <span>
-                        <kbd>Échap</kbd>
-                        Fermer
-                    </span>
-                </div>
+                <KeyboardShortcutLegend
+                    items={
+                        PRODUCTION_COMPLETE_SHORTCUTS
+                    }
+                    title="Raccourcis de fin de production"
+                />
 
                 <div className="production-complete__actions">
                     <button
                         className="button button--secondary"
                         type="button"
+                        aria-keyshortcuts="R Backspace"
                         onClick={onRestart}
                     >
                         Recommencer
@@ -161,6 +178,7 @@ export default function ProductionComplete({
                     <button
                         className="button button--primary"
                         type="button"
+                        aria-keyshortcuts="Enter"
                         onClick={
                             onReturnToDashboard
                         }

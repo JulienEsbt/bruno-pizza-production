@@ -1,5 +1,7 @@
 import AppTopBar from "../../../components/layout/AppTopBar";
 
+import "./DashboardHeader.css";
+
 interface DashboardHeaderProps {
     date: string;
     updatedAt: string;
@@ -30,7 +32,6 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
     return (
         <AppTopBar
-            className="dashboard-topbar"
             left={
                 <div className="app-page-heading">
                     <p className="app-page-heading__eyebrow">
@@ -44,19 +45,27 @@ export default function DashboardHeader({
             }
             center={
                 <div className="dashboard-header__update">
-                    <span>
-                        Données de production
+                    <span
+                        className="dashboard-header__update-icon"
+                        aria-hidden="true"
+                    >
+                        📅
                     </span>
 
-                    <strong>
-                        {date} à{" "}
-                        {formatUpdatedAt(updatedAt)}
-                    </strong>
+                    <div>
+                        <span>
+                            Données de production
+                        </span>
 
-                    <small>
-                        Date et heure fournies par la
-                        source active
-                    </small>
+                        <strong>
+                            {date} à{" "}
+                            {formatUpdatedAt(updatedAt)}
+                        </strong>
+
+                        <small>
+                            Horodatage du fichier Excel
+                        </small>
+                    </div>
                 </div>
             }
         />

@@ -1,7 +1,6 @@
 export type ProductionSource =
     | "empty"
-    | "excel"
-    | "api";
+    | "excel";
 
 export interface DistributorProduction {
     id: string;
@@ -20,7 +19,9 @@ export interface PizzaProduction {
 
 export interface ProductionDay {
     date: string;
-    updatedAt: string;
+    sourceUpdatedAt: string;
+    importedAt: string;
+    sourceFileName: string;
     source: ProductionSource;
     pizzas: PizzaProduction[];
 }

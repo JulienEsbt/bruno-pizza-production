@@ -6,6 +6,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
 
@@ -20,7 +21,7 @@ import {
     updateDistributor as updateDistributorFromApi,
     updateIngredient as updateIngredientFromApi,
     updatePizza as updatePizzaFromApi,
-} from "../services/settings/settingsApi";
+} from "../features/settings/services/settingsApi";
 
 import type {
     CreateDistributorInput,
@@ -119,6 +120,9 @@ export function SettingsProvider({
     const [error, setError] = useState<
         string | null
     >(null);
+    const mutationQueueRef = useRef<
+        Promise<void>
+    >(Promise.resolve());
 
     const reloadSettings =
         useCallback(async (): Promise<void> => {
@@ -148,34 +152,45 @@ export function SettingsProvider({
         };
     }, [reloadSettings]);
 
-    const executeCatalogMutation =
-        useCallback(
-            async (
-                mutation: () =>
-                    Promise<ProductionSettings>,
-            ): Promise<void> => {
-                try {
-                    setIsSaving(true);
-                    setError(null);
+    const executeCatalogMutation = useCallback(
+        (
+            mutation: () =>
+                Promise<ProductionSettings>,
+        ): Promise<void> => {
+            const pendingMutation =
+                mutationQueueRef.current.then(
+                    async () => {
+                        try {
+                            setIsSaving(true);
+                            setError(null);
 
-                    const updatedCatalog =
-                        await mutation();
+                            const updatedCatalog =
+                                await mutation();
 
-                    setSettings(updatedCatalog);
-                } catch (requestError) {
-                    setError(
-                        getErrorMessage(
-                            requestError,
-                        ),
-                    );
+                            setSettings(
+                                updatedCatalog,
+                            );
+                        } catch (requestError) {
+                            setError(
+                                getErrorMessage(
+                                    requestError,
+                                ),
+                            );
 
-                    throw requestError;
-                } finally {
-                    setIsSaving(false);
-                }
-            },
-            [],
-        );
+                            throw requestError;
+                        } finally {
+                            setIsSaving(false);
+                        }
+                    },
+                );
+
+            mutationQueueRef.current =
+                pendingMutation.catch(() => undefined);
+
+            return pendingMutation;
+        },
+        [],
+    );
 
     const addIngredient = useCallback(
         async (

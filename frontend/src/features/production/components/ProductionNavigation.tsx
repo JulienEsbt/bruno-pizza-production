@@ -1,10 +1,36 @@
+import KeyboardShortcutLegend, {
+    type KeyboardShortcutItem,
+} from "../../../components/keyboard/KeyboardShortcutLegend";
+import AppBottomBar, {
+    AppBottomBarAction,
+} from "../../../components/layout/AppBottomBar";
+
+import "./ProductionNavigation.css";
+
 interface ProductionNavigationProps {
     isFirstPizza: boolean;
     isLastPizza: boolean;
     onPrevious: () => void;
     onNext: () => void;
     onFinish: () => void;
+    onOpenSettings: () => void;
+    onReturnToDashboard: () => void;
 }
+
+const PRODUCTION_SHORTCUTS = [
+    {
+        key: "← →",
+        label: "Pizzas",
+    },
+    {
+        key: "P",
+        label: "Paramètres",
+    },
+    {
+        key: "T",
+        label: "Thème",
+    },
+] satisfies KeyboardShortcutItem[];
 
 export default function ProductionNavigation({
     isFirstPizza,
@@ -12,62 +38,74 @@ export default function ProductionNavigation({
     onPrevious,
     onNext,
     onFinish,
+    onOpenSettings,
+    onReturnToDashboard,
 }: ProductionNavigationProps) {
     return (
-        <nav
-            className="production-command-bar"
-            aria-label="Commandes de production"
+        <AppBottomBar
+            element="nav"
+            ariaLabel="Commandes de production"
         >
-            <button
-                className="production-command-button"
-                type="button"
+            <AppBottomBarAction
+                icon="←"
+                label="Précédente"
+                shortcut="←"
+                hint="Pizza précédente"
+                aria-keyshortcuts="ArrowLeft"
                 onClick={onPrevious}
                 disabled={isFirstPizza}
-            >
-                <span>Précédente</span>
-            </button>
+            />
 
-            <div className="production-command-bar__hint">
-                <span>
-                    <kbd>Espace</kbd> ou{" "}
-                    <kbd>Échap</kbd>{" "}
-                    Tableau
-                </span>
+            <AppBottomBarAction
+                icon="↩"
+                label="Dashboard"
+                shortcut="Échap"
+                hint="Retour"
+                aria-keyshortcuts="Escape"
+                onClick={onReturnToDashboard}
+            />
 
-                <span>
-                    <kbd>P</kbd>{" "}
-                    Paramètres
-                </span>
+            <KeyboardShortcutLegend
+                items={PRODUCTION_SHORTCUTS}
+            />
 
-                <strong>
-                    <kbd>←</kbd>{" "}
-                    précédente ·{" "}
-                    <kbd>→</kbd>{" "}
-                    {isLastPizza
-                        ? "terminer"
-                        : "suivante"}
-                </strong>
-            </div>
+            <AppBottomBarAction
+                icon="⚙"
+                label="Paramètres"
+                shortcut="P"
+                hint="Catalogue"
+                aria-keyshortcuts="P"
+                onClick={onOpenSettings}
+            />
 
-            <button
-                className={
+            <AppBottomBarAction
+                icon={isLastPizza ? "✓" : "→"}
+                label={
                     isLastPizza
-                        ? "production-command-button production-command-button--finish"
-                        : "production-command-button production-command-button--primary"
+                        ? "Terminer"
+                        : "Suivante"
                 }
-                type="button"
+                shortcut="→"
+                hint={
+                    isLastPizza
+                        ? "Valider la production"
+                        : "Pizza suivante"
+                }
+                tone={
+                    isLastPizza
+                        ? "success"
+                        : "primary"
+                }
+                trailing={
+                    isLastPizza ? "✓" : "→"
+                }
+                aria-keyshortcuts="ArrowRight"
                 onClick={
                     isLastPizza
                         ? onFinish
                         : onNext
                 }
-            >
-                <span>
-                    {isLastPizza
-                        ? "Terminer"
-                        : "Suivante"}
-                </span>
-            </button>
-        </nav>
+            />
+        </AppBottomBar>
     );
 }

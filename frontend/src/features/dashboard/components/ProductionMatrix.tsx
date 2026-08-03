@@ -1,4 +1,12 @@
-import { useMemo } from "react";
+import {
+    type DragEvent,
+    type PointerEvent,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
+
+import "./ProductionMatrix.css";
 
 import { useSettings } from "../../../hooks/useSettings";
 
@@ -8,7 +16,6 @@ import type {
 } from "../../../types/production";
 
 import {
-    getFamilyLabel,
     getPizzaFamily,
     normalizePizzaName,
     type PizzaFamily,
@@ -21,6 +28,10 @@ import {
 
 interface ProductionMatrixProps {
     pizzas: PizzaProduction[];
+    isImportDisabled: boolean;
+    isImporting: boolean;
+    onRequestImport: () => void;
+    onImportFile: (file: File) => Promise<void>;
 }
 
 interface MatrixDistributor {
@@ -38,6 +49,21 @@ const FAMILY_ORDER: PizzaFamily[] = [
     "other",
 ];
 
+const getCellClassName = (
+    baseClassName: string,
+    columnIndex: number,
+    hoveredColumnIndex: number | null,
+): string => {
+    return [
+        baseClassName,
+        columnIndex === hoveredColumnIndex
+            ? "production-matrix__column--hovered"
+            : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
+};
+
 const getPizzaDistributorQuantity = (
     pizza: PizzaProduction,
     distributorId: string,
@@ -47,30 +73,6 @@ const getPizzaDistributorQuantity = (
             (distributor) =>
                 distributor.id === distributorId,
         )?.quantity ?? 0
-    );
-};
-
-const getDistributorTotal = (
-    pizzas: PizzaProduction[],
-    distributorId: string,
-): number => {
-    return pizzas.reduce(
-        (total, pizza) =>
-            total +
-            getPizzaDistributorQuantity(
-                pizza,
-                distributorId,
-            ),
-        0,
-    );
-};
-
-const getFamilyTotal = (
-    pizzas: PizzaProduction[],
-): number => {
-    return pizzas.reduce(
-        (total, pizza) => total + pizza.quantity,
-        0,
     );
 };
 
@@ -127,8 +129,17 @@ const buildDistributors = (
 
 export default function ProductionMatrix({
     pizzas,
+    isImportDisabled,
+    isImporting,
+    onRequestImport,
+    onImportFile,
 }: ProductionMatrixProps) {
     const { settings } = useSettings();
+    const dragDepthRef = useRef(0);
+    const [isDragActive, setIsDragActive] =
+        useState(false);
+    const [hoveredColumnIndex, setHoveredColumnIndex] =
+        useState<number | null>(null);
 
     const distributors = useMemo(
         () =>
@@ -142,7 +153,7 @@ export default function ProductionMatrix({
         ],
     );
 
-    const pizzasByFamily = useMemo(() => {
+    const orderedPizzas = useMemo(() => {
         const groupedPizzas = new Map<
             PizzaFamily,
             PizzaProduction[]
@@ -158,49 +169,218 @@ export default function ProductionMatrix({
                 ?.push(pizza);
         }
 
-        return groupedPizzas;
+        return FAMILY_ORDER.flatMap(
+            (family) =>
+                groupedPizzas.get(family) ?? [],
+        );
     }, [pizzas]);
 
-    const totalQuantity = pizzas.reduce(
-        (total, pizza) => total + pizza.quantity,
-        0,
-    );
+    const generalTotals = useMemo(() => {
+        const byDistributor = new Map<
+            string,
+            number
+        >(
+            distributors.map((distributor) => [
+                distributor.id,
+                0,
+            ]),
+        );
+        let total = 0;
+
+        for (const pizza of orderedPizzas) {
+            total += pizza.quantity;
+
+            for (const distributor of pizza.distributors) {
+                byDistributor.set(
+                    distributor.id,
+                    (byDistributor.get(
+                        distributor.id,
+                    ) ?? 0) +
+                        distributor.quantity,
+                );
+            }
+        }
+
+        return {
+            byDistributor,
+            total,
+        };
+    }, [
+        distributors,
+        orderedPizzas,
+    ]);
+
+    const handleEmptyDragEnter = (
+        event: DragEvent<HTMLButtonElement>,
+    ): void => {
+        event.preventDefault();
+
+        if (isImportDisabled) {
+            return;
+        }
+
+        dragDepthRef.current += 1;
+        setIsDragActive(true);
+    };
+
+    const handleEmptyDragLeave = (
+        event: DragEvent<HTMLButtonElement>,
+    ): void => {
+        event.preventDefault();
+        dragDepthRef.current = Math.max(
+            0,
+            dragDepthRef.current - 1,
+        );
+
+        if (dragDepthRef.current === 0) {
+            setIsDragActive(false);
+        }
+    };
+
+    const handleEmptyDrop = (
+        event: DragEvent<HTMLButtonElement>,
+    ): void => {
+        event.preventDefault();
+        dragDepthRef.current = 0;
+        setIsDragActive(false);
+
+        if (isImportDisabled) {
+            return;
+        }
+
+        const file = event.dataTransfer.files[0];
+
+        if (file) {
+            void onImportFile(file);
+        }
+    };
+
+    const handleCellPointerOver = (
+        event: PointerEvent<HTMLTableElement>,
+    ): void => {
+        if (!(event.target instanceof Element)) {
+            return;
+        }
+
+        const cell = event.target.closest("th, td");
+
+        if (
+            !(cell instanceof HTMLTableCellElement) ||
+            !event.currentTarget.contains(cell)
+        ) {
+            return;
+        }
+
+        setHoveredColumnIndex((currentColumnIndex) =>
+            currentColumnIndex === cell.cellIndex
+                ? currentColumnIndex
+                : cell.cellIndex,
+        );
+    };
 
     if (pizzas.length === 0) {
         return (
-            <section className="production-matrix production-matrix--empty">
-                <span aria-hidden="true">▦</span>
+            <section
+                className={[
+                    "production-matrix production-matrix--empty",
+                    isDragActive
+                        ? "production-matrix--drag-active"
+                        : "",
+                ]
+                    .filter(Boolean)
+                    .join(" ")}
+            >
+                <button
+                    className="production-matrix__dropzone"
+                    type="button"
+                    disabled={isImportDisabled}
+                    aria-busy={isImporting}
+                    onClick={onRequestImport}
+                    onDragEnter={handleEmptyDragEnter}
+                    onDragOver={(event) => {
+                        event.preventDefault();
 
-                <h2>Aucune production chargée</h2>
+                        if (!isImportDisabled) {
+                            event.dataTransfer.dropEffect =
+                                "copy";
+                        }
+                    }}
+                    onDragLeave={handleEmptyDragLeave}
+                    onDrop={handleEmptyDrop}
+                >
+                    <span
+                        className="production-matrix__dropzone-icon"
+                        aria-hidden="true"
+                    >
+                        {isImporting ? "…" : "⇧"}
+                    </span>
 
-                <p>
-                    Importez le fichier Excel pour afficher la
-                    répartition.
-                </p>
+                    <h2>
+                        {isImporting
+                            ? "Import en cours…"
+                            : "Importer une production"}
+                    </h2>
+
+                    <p>
+                        Cliquez ici ou déposez votre fichier
+                        Excel directement dans cette zone.
+                    </p>
+
+                    <strong>
+                        {isImporting
+                            ? "Lecture du fichier…"
+                            : "Choisir un fichier Excel"}
+                    </strong>
+
+                    <small>Formats .xlsx et .xls</small>
+                </button>
             </section>
         );
     }
 
     return (
         <section className="production-matrix">
-            
-
             <div className="production-matrix__scroll">
-                <table>
+                <table
+                    onPointerOver={handleCellPointerOver}
+                    onPointerLeave={() =>
+                        setHoveredColumnIndex(null)
+                    }
+                >
                     <thead>
                         <tr>
-                            <th className="production-matrix__recipe-column">
+                            <th
+                                className={getCellClassName(
+                                    "production-matrix__recipe-column",
+                                    0,
+                                    hoveredColumnIndex,
+                                )}
+                            >
                                 Variétés
                             </th>
 
-                            <th className="production-matrix__total-column">
+                            <th
+                                className={getCellClassName(
+                                    "production-matrix__total-column",
+                                    1,
+                                    hoveredColumnIndex,
+                                )}
+                            >
                                 Total
                             </th>
 
                             {distributors.map(
-                                (distributor) => (
+                                (
+                                    distributor,
+                                    distributorIndex,
+                                ) => (
                                     <th
-                                        className="production-matrix__distributor-header"
+                                        className={getCellClassName(
+                                            "production-matrix__distributor-header",
+                                            distributorIndex +
+                                                2,
+                                            hoveredColumnIndex,
+                                        )}
                                         key={distributor.id}
                                         title={
                                             distributor.name
@@ -208,6 +388,8 @@ export default function ProductionMatrix({
                                         style={{
                                             backgroundColor:
                                                 distributor.backgroundColor,
+                                            backgroundImage:
+                                                "linear-gradient(145deg, rgba(255, 255, 255, 0.18), transparent 50%, rgba(6, 18, 39, 0.10))",
                                             color:
                                                 distributor.foregroundColor,
                                             borderBottomColor:
@@ -222,183 +404,126 @@ export default function ProductionMatrix({
                             )}
                         </tr>
 
-                        <tr className="production-matrix__daily-totals">
-                            <th>Totaux journaliers</th>
-
-                            <th>
-                                <strong>
-                                    {totalQuantity}
-                                </strong>
-                            </th>
-
-                            {distributors.map(
-                                (distributor) => (
-                                    <th
-                                        key={
-                                            distributor.id
-                                        }
-                                    >
-                                        {getDistributorTotal(
-                                            pizzas,
-                                            distributor.id,
-                                        )}
-                                    </th>
-                                ),
-                            )}
-                        </tr>
                     </thead>
 
                     <tbody>
-                        {FAMILY_ORDER.map((family) => {
-                            const familyPizzas =
-                                pizzasByFamily.get(
-                                    family,
-                                ) ?? [];
-
-                            if (
-                                familyPizzas.length === 0
-                            ) {
-                                return null;
-                            }
-
-                            return [
-                                ...familyPizzas.map(
-                                    (pizza) => (
-                                        <tr key={pizza.id}>
-                                            <th
-                                                className="production-matrix__pizza-name"
-                                                scope="row"
-                                            >
-                                                <span>
-                                                    {normalizePizzaName(
-                                                        pizza.name,
-                                                    )}
-                                                </span>
-
-                                                <small>
-                                                    {
-                                                        pizza
-                                                            .ingredients
-                                                            .length
-                                                    }{" "}
-                                                    ingrédient
-                                                    {pizza
-                                                        .ingredients
-                                                        .length >
-                                                    1
-                                                        ? "s"
-                                                        : ""}
-                                                </small>
-                                            </th>
-
-                                            <td className="production-matrix__pizza-total">
-                                                {
-                                                    pizza.quantity
-                                                }
-                                            </td>
-
-                                            {distributors.map(
-                                                (
-                                                    distributor,
-                                                ) => {
-                                                    const quantity =
-                                                        getPizzaDistributorQuantity(
-                                                            pizza,
-                                                            distributor.id,
-                                                        );
-
-                                                    return (
-                                                        <td
-                                                            className={[
-                                                                "production-matrix__quantity",
-                                                                quantity ===
-                                                                0
-                                                                    ? "production-matrix__quantity--zero"
-                                                                    : "",
-                                                            ]
-                                                                .filter(
-                                                                    Boolean,
-                                                                )
-                                                                .join(
-                                                                    " ",
-                                                                )}
-                                                            key={
-                                                                distributor.id
-                                                            }
-                                                            style={
-                                                                quantity > 0
-                                                                    ? {
-                                                                          color:
-                                                                              distributor.backgroundColor,
-                                                                      }
-                                                                    : undefined
-                                                            }
-                                                        >
-                                                            {
-                                                                quantity
-                                                            }
-                                                        </td>
-                                                    );
-                                                },
-                                            )}
-                                        </tr>
-                                    ),
-                                ),
-
-                                <tr
-                                    className="production-matrix__family-total"
-                                    key={`${family}-total`}
+                        {orderedPizzas.map((pizza) => (
+                            <tr key={pizza.id}>
+                                <th
+                                    className={getCellClassName(
+                                        "production-matrix__pizza-name",
+                                        0,
+                                        hoveredColumnIndex,
+                                    )}
+                                    scope="row"
                                 >
-                                    <th>
-                                        Total{" "}
-                                        {getFamilyLabel(
-                                            family,
-                                        )}
-                                    </th>
+                                    {normalizePizzaName(
+                                        pizza.name,
+                                    )}
+                                </th>
 
-                                    <td>
-                                        {getFamilyTotal(
-                                            familyPizzas,
-                                        )}
-                                    </td>
+                                <td
+                                    className={getCellClassName(
+                                        "production-matrix__pizza-total",
+                                        1,
+                                        hoveredColumnIndex,
+                                    )}
+                                >
+                                    {pizza.quantity}
+                                </td>
 
-                                    {distributors.map(
-                                        (distributor) => (
+                                {distributors.map(
+                                    (
+                                        distributor,
+                                        distributorIndex,
+                                    ) => {
+                                        const quantity =
+                                            getPizzaDistributorQuantity(
+                                                pizza,
+                                                distributor.id,
+                                            );
+
+                                        return (
                                             <td
+                                                className={[
+                                                    "production-matrix__quantity",
+                                                    quantity === 0
+                                                        ? "production-matrix__quantity--zero"
+                                                        : "",
+                                                    distributorIndex +
+                                                        2 ===
+                                                    hoveredColumnIndex
+                                                        ? "production-matrix__column--hovered"
+                                                        : "",
+                                                ]
+                                                    .filter(
+                                                        Boolean,
+                                                    )
+                                                    .join(" ")}
                                                 key={
                                                     distributor.id
                                                 }
+                                                style={
+                                                    quantity > 0
+                                                        ? {
+                                                              color:
+                                                                  distributor.accentColor,
+                                                          }
+                                                        : undefined
+                                                }
                                             >
-                                                {getDistributorTotal(
-                                                    familyPizzas,
-                                                    distributor.id,
-                                                )}
+                                                {quantity}
                                             </td>
-                                        ),
-                                    )}
-                                </tr>,
-                            ];
-                        })}
+                                        );
+                                    },
+                                )}
+                            </tr>
+                        ))}
                     </tbody>
 
                     <tfoot>
                         <tr>
-                            <th>Total général</th>
+                            <th
+                                className={getCellClassName(
+                                    "",
+                                    0,
+                                    hoveredColumnIndex,
+                                )}
+                                scope="row"
+                            >
+                                Total général
+                            </th>
 
-                            <th>{totalQuantity}</th>
+                            <td
+                                className={getCellClassName(
+                                    "",
+                                    1,
+                                    hoveredColumnIndex,
+                                )}
+                            >
+                                {generalTotals.total}
+                            </td>
 
                             {distributors.map(
-                                (distributor) => (
-                                    <th
+                                (
+                                    distributor,
+                                    distributorIndex,
+                                ) => (
+                                    <td
+                                        className={getCellClassName(
+                                            "",
+                                            distributorIndex +
+                                                2,
+                                            hoveredColumnIndex,
+                                        )}
                                         key={
                                             distributor.id
                                         }
                                     >
-                                        {getDistributorTotal(
-                                            pizzas,
+                                        {generalTotals.byDistributor.get(
                                             distributor.id,
-                                        )}
-                                    </th>
+                                        ) ?? 0}
+                                    </td>
                                 ),
                             )}
                         </tr>

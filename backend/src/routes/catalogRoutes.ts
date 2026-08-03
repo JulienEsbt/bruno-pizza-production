@@ -8,6 +8,7 @@ import {
     updateDistributor,
     createIngredient,
     createPizza,
+    CatalogError,
     deleteIngredient,
     deletePizza,
     getCatalog,
@@ -33,38 +34,16 @@ const sendCatalogError = (
 ): void => {
     console.error("Erreur catalogue :", error);
 
-    const message =
-        error instanceof Error
-            ? error.message
-            : "Erreur inconnue du catalogue.";
-
-    if (
-        message === "Pizza introuvable." ||
-        message === "Ingrédient introuvable." ||
-        message === "Distributeur introuvable."
-    ) {
-        response.status(404).json({
-            error: message,
+    if (error instanceof CatalogError) {
+        response.status(error.status).json({
+            error: error.message,
         });
-
         return;
     }
 
-    if (
-        message.includes("existe déjà") ||
-        message.includes(
-            "Impossible de supprimer",
-        )
-    ) {
-        response.status(409).json({
-            error: message,
-        });
-
-        return;
-    }
-
-    response.status(400).json({
-        error: message,
+    response.status(500).json({
+        error:
+            "Une erreur interne est survenue dans le catalogue.",
     });
 };
 

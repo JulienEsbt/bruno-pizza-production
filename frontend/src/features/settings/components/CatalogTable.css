@@ -1,0 +1,83 @@
+.settings-catalog {
+    min-height: 0;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            155deg,
+            var(--surface),
+            color-mix(
+                in srgb,
+                var(--surface-subtle),
+                var(--surface) 55%
+            )
+        );
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.settings-catalog__table {
+    height: 100%;
+    overflow: auto;
+}
+
+.settings-catalog table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.settings-catalog th,
+.settings-catalog td {
+    padding: 10px 13px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--app-text);
+    font-size: 0.86rem;
+    text-align: left;
+}
+
+.settings-catalog tr > :last-child {
+    border-right: 0;
+}
+
+.settings-catalog thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.settings-catalog thead th {
+    height: 47px;
+    color: var(--text-muted);
+    background: var(--surface-subtle);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.settings-catalog tbody tr:hover td {
+    background: color-mix(
+        in srgb,
+        var(--primary-soft),
+        var(--surface) 60%
+    );
+}
+
+.settings-catalog input[type="text"] {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 11px;
+    color: var(--app-text);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 0.86rem;
+}
+
+.settings-ingredient-table th:first-child,
+.settings-ingredient-table td:first-child {
+    width: 170px;
+}

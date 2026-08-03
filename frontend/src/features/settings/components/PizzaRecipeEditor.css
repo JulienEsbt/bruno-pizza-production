@@ -1,0 +1,115 @@
+.pizza-recipe-editor {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0;
+}
+
+.pizza-recipe-editor__warning {
+    color: var(--warning);
+    font-size: 0.7rem;
+    font-weight: 850;
+}
+
+.pizza-recipe-list {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    min-height: 0;
+    overflow: auto;
+    padding: 10px 12px;
+}
+
+.pizza-recipe-list__empty {
+    padding: 30px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.pizza-recipe-item {
+    display: grid;
+    grid-template-columns: 26px 34px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 6px 10px;
+    background:
+        linear-gradient(
+            135deg,
+            var(--surface-subtle),
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface-subtle) 88%
+            )
+        );
+    border: 1px solid var(--border);
+    border-radius: 11px;
+}
+
+.pizza-recipe-item--dragging {
+    opacity: 0.45;
+}
+
+.pizza-recipe-item--drag-target {
+    border-color: var(--primary);
+    box-shadow: 0 -3px 0 var(--primary);
+}
+
+.pizza-recipe-item--inactive {
+    color: var(--text-muted);
+}
+
+.pizza-recipe-item__handle {
+    color: var(--text-muted);
+    cursor: grab;
+}
+
+.pizza-recipe-item__number {
+    display: grid;
+    place-items: center;
+    width: 33px;
+    height: 33px;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-radius: 10px;
+    font-size: 0.74rem;
+}
+
+.pizza-recipe-item__name {
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.pizza-recipe-item__remove {
+    color: var(--danger);
+    background: transparent;
+    border: 0;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.pizza-recipe-add {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 9px 12px;
+    border-top: 1px solid var(--border);
+}
+
+.pizza-recipe-add select,
+.pizza-recipe-add button {
+    min-height: 42px;
+    padding: 8px 11px;
+    color: var(--app-text);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.86rem;
+}
+
+.pizza-recipe-add button {
+    color: #fff;
+    background: var(--primary);
+    border-color: var(--primary);
+    font-weight: 800;
+}

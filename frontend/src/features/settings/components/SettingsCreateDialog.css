@@ -1,0 +1,133 @@
+.settings-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(5, 14, 28, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.settings-create-dialog {
+    width: min(620px, 100%);
+    overflow: hidden;
+    color: var(--app-text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.35);
+}
+
+.settings-create-dialog > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+    background: var(--surface-subtle);
+    border-bottom: 1px solid var(--border);
+}
+
+.settings-create-dialog header p {
+    margin: 0 0 3px;
+    color: var(--primary);
+    font-size: 0.59rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.settings-create-dialog header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.settings-create-dialog header > button {
+    width: 34px;
+    height: 34px;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 1.15rem;
+}
+
+.settings-create-dialog form {
+    padding: 20px;
+}
+
+.settings-create-dialog__fields {
+    display: grid;
+    gap: 12px;
+}
+
+.settings-create-dialog__fields--pizza {
+    grid-template-columns: 1.5fr 1fr;
+}
+
+.settings-create-dialog__fields--distributor {
+    grid-template-columns: 1fr 1fr;
+}
+
+.settings-create-dialog__fields label {
+    display: grid;
+    gap: 5px;
+}
+
+.settings-create-dialog__fields label > span {
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    font-weight: 850;
+}
+
+.settings-create-dialog input,
+.settings-create-dialog select {
+    width: 100%;
+    min-height: 43px;
+    padding: 8px 10px;
+    color: var(--app-text);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+}
+
+.settings-create-dialog__color input[type="color"] {
+    padding: 4px;
+}
+
+.settings-create-dialog form > footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.settings-create-dialog form > footer button {
+    min-height: 42px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-size: 0.72rem;
+    font-weight: 850;
+}
+
+.settings-create-dialog__cancel {
+    color: var(--app-text);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+}
+
+.settings-create-dialog__submit {
+    color: #fff;
+    background: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+@media (max-width: 560px) {
+    .settings-create-dialog__fields--pizza,
+    .settings-create-dialog__fields--distributor {
+        grid-template-columns: 1fr;
+    }
+}

@@ -9,12 +9,12 @@ export default function GlobalThemeSwitch() {
     } = useTheme();
 
     return (
-        <div className="theme-switch-control">
+        <div className="bp-theme-switch">
             <span
                 className={[
-                    "theme-switch-control__label",
+                    "bp-theme-switch__label",
                     !isDark
-                        ? "theme-switch-control__label--active"
+                        ? "bp-theme-switch__label--active"
                         : "",
                 ]
                     .filter(Boolean)
@@ -25,9 +25,9 @@ export default function GlobalThemeSwitch() {
 
             <button
                 className={[
-                    "theme-switch-control__switch",
+                    "bp-theme-switch__track",
                     isDark
-                        ? "theme-switch-control__switch--dark"
+                        ? "bp-theme-switch__track--dark"
                         : "",
                 ]
                     .filter(Boolean)
@@ -35,6 +35,7 @@ export default function GlobalThemeSwitch() {
                 type="button"
                 role="switch"
                 aria-checked={isDark}
+                aria-keyshortcuts="T"
                 aria-label={
                     isDark
                         ? "Passer en mode clair"
@@ -42,8 +43,8 @@ export default function GlobalThemeSwitch() {
                 }
                 title={
                     isDark
-                        ? "Passer en mode clair"
-                        : "Passer en mode sombre"
+                        ? "Passer en mode clair — raccourci T"
+                        : "Passer en mode sombre — raccourci T"
                 }
                 onClick={toggleTheme}
             >
@@ -52,9 +53,9 @@ export default function GlobalThemeSwitch() {
 
             <span
                 className={[
-                    "theme-switch-control__label",
+                    "bp-theme-switch__label",
                     isDark
-                        ? "theme-switch-control__label--active"
+                        ? "bp-theme-switch__label--active"
                         : "",
                 ]
                     .filter(Boolean)

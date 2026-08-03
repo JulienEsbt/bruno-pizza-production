@@ -1,0 +1,111 @@
+.activation-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.activation-control__checkbox {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--success);
+}
+
+.activation-control__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 78px;
+    padding: 6px 11px;
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.activation-control__badge::before {
+    flex: 0 0 7px;
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    border-radius: 50%;
+    content: "";
+}
+
+.activation-control__badge--active {
+    background: var(--success);
+    box-shadow: 0 7px 17px
+        color-mix(
+            in srgb,
+            var(--success),
+            transparent 76%
+        );
+}
+
+.activation-control__badge--inactive {
+    background: color-mix(
+        in srgb,
+        var(--text-muted),
+        var(--surface) 16%
+    );
+}
+
+.activation-control__description {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.activation-control--card {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    width: 100%;
+    min-height: 50px;
+    padding: 8px 11px;
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(
+                in srgb,
+                var(--success),
+                transparent 92%
+            ),
+            var(--surface-subtle)
+        );
+    border: 1px solid var(--border);
+    border-radius: 11px;
+}
+
+.activation-control--card:has(
+        .activation-control__checkbox:checked
+    ) {
+    border-color: color-mix(
+        in srgb,
+        var(--success),
+        transparent 55%
+    );
+}
+
+.activation-control:has(
+        .activation-control__checkbox:disabled
+    ) {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+@media (max-width: 760px) {
+    .activation-control--card {
+        grid-template-columns: auto 1fr;
+    }
+
+    .activation-control--card
+        .activation-control__description {
+        grid-column: 1 / -1;
+    }
+}

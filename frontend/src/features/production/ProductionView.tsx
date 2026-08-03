@@ -1,21 +1,30 @@
 import {
+    useCallback,
     useEffect,
     useMemo,
     useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-import AppTopBar from "../../components/layout/AppTopBar";
 import { useProduction } from "../../hooks/useProduction";
 import { useSettings } from "../../hooks/useSettings";
+import { useTheme } from "../../hooks/useTheme";
+import {
+    canUseAppShortcut,
+    resolveProductionCompleteShortcut,
+} from "../../shared/keyboard/keyboardShortcuts";
 import {
     getDistributorPresentation,
     sortDistributors,
 } from "../../utils/distributorPresentation";
-import { sortProductionPizzasByCatalog } from "../../utils/productionOrdering";
 import PizzaProductionCard from "./components/PizzaProductionCard";
-import ProductionNavigation from "./components/ProductionNavigation";
 import ProductionComplete from "./components/ProductionComplete";
+import ProductionHeader from "./components/ProductionHeader";
+import ProductionNavigation from "./components/ProductionNavigation";
+import {
+    normalizeCatalogName,
+    sortProductionPizzasByCatalog,
+} from "./domain/productionCatalog";
 
 import "../../styles/buttons.css";
 import "./ProductionView.css";
@@ -24,131 +33,98 @@ interface StoredProductionPosition {
     currentPizzaIndex: number;
 }
 
-const formatCurrentDate = (
-    date: Date,
-): string => {
-    return new Intl.DateTimeFormat("fr-FR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    }).format(date);
-};
+interface DistributorSummary {
+    id: string;
+    name: string;
+    quantity: number;
+}
 
-const formatClock = (date: Date): string => {
-    return new Intl.DateTimeFormat("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    }).format(date);
+const readStoredPosition = (
+    storageKey: string,
+    pizzaCount: number,
+): number => {
+    try {
+        const storedPosition =
+            localStorage.getItem(storageKey);
+
+        if (!storedPosition) {
+            return 0;
+        }
+
+        const parsedPosition = JSON.parse(
+            storedPosition,
+        ) as Partial<StoredProductionPosition>;
+        const storedIndex = Number(
+            parsedPosition.currentPizzaIndex,
+        );
+
+        if (!Number.isInteger(storedIndex)) {
+            throw new Error("Position invalide");
+        }
+
+        return Math.min(
+            Math.max(storedIndex, 0),
+            Math.max(pizzaCount - 1, 0),
+        );
+    } catch {
+        localStorage.removeItem(storageKey);
+        return 0;
+    }
 };
 
 export default function ProductionView() {
     const navigate = useNavigate();
     const { production } = useProduction();
     const { settings } = useSettings();
+    const { toggleTheme } = useTheme();
 
     const pizzas = useMemo(
-
-
         () =>
-
-
             sortProductionPizzasByCatalog(
-
-
                 production.pizzas,
-
-
                 settings.pizzas,
-
-
             ),
-
-
-        [
-
-
-            production.pizzas,
-
-
-            settings.pizzas,
-
-
-        ],
-
-
+        [production.pizzas, settings.pizzas],
     );
 
-    const storageKey = useMemo(() => {
-        const pizzaIds = pizzas
-            .map((pizza) => pizza.id)
-            .join("-");
-
-        return [
-            "bruno-pizza-position",
+    const storageKey = useMemo(
+        () =>
+            [
+                "bruno-pizza-position-v2",
+                production.date,
+                production.importedAt,
+                pizzas.map((pizza) => pizza.id).join("-"),
+            ].join(":"),
+        [
             production.date,
-            production.updatedAt,
-            pizzaIds,
-        ].join(":");
-    }, [
-        production.date,
-        production.updatedAt,
-        pizzas,
-    ]);
+            production.importedAt,
+            pizzas,
+        ],
+    );
 
-    const initialPizzaIndex = useMemo(() => {
-        try {
-            const storedPosition =
-                localStorage.getItem(storageKey);
-
-            if (!storedPosition) {
-                return 0;
-            }
-
-            const parsedPosition = JSON.parse(
-                storedPosition,
-            ) as StoredProductionPosition;
-
-            const maximumIndex = Math.max(
-                pizzas.length - 1,
-                0,
-            );
-
-            return Math.min(
-                Math.max(
-                    Number(
-                        parsedPosition.currentPizzaIndex,
-                    ) || 0,
-                    0,
-                ),
-                maximumIndex,
-            );
-        } catch {
-            localStorage.removeItem(storageKey);
-            return 0;
-        }
-    }, [pizzas.length, storageKey]);
-
-    const [currentPizzaIndex, setCurrentPizzaIndex] =
-        useState(initialPizzaIndex);
-
+    const [storedPizzaIndex, setStoredPizzaIndex] =
+        useState(() =>
+            readStoredPosition(
+                storageKey,
+                pizzas.length,
+            ),
+        );
+    const currentPizzaIndex = Math.min(
+        storedPizzaIndex,
+        Math.max(pizzas.length - 1, 0),
+    );
     const [currentTime, setCurrentTime] =
-        useState(new Date());
-
-    const [
-        isCompletionOpen,
-        setIsCompletionOpen,
-    ] = useState(false);
+        useState(() => new Date());
+    const [isCompletionOpen, setIsCompletionOpen] =
+        useState(false);
 
     useEffect(() => {
-        const intervalId = window.setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1_000);
+        const intervalId = window.setInterval(
+            () => setCurrentTime(new Date()),
+            1_000,
+        );
 
-        return () => {
-            window.clearInterval(intervalId);
-        };
+        return () => window.clearInterval(intervalId);
     }, []);
 
     useEffect(() => {
@@ -162,184 +138,166 @@ export default function ProductionView() {
         );
     }, [currentPizzaIndex, storageKey]);
 
-    const currentPizza =
-        pizzas[currentPizzaIndex];
+    const currentPizza = pizzas[currentPizzaIndex];
+    const previousPizza =
+        currentPizzaIndex > 0
+            ? pizzas[currentPizzaIndex - 1]
+            : undefined;
+    const nextPizza =
+        currentPizzaIndex < pizzas.length - 1
+            ? pizzas[currentPizzaIndex + 1]
+            : undefined;
 
     const currentCatalogPizza = useMemo(() => {
         if (!currentPizza) {
             return undefined;
         }
 
-        const normalizedProductionName =
-            currentPizza.name
-                .trim()
-                .replace(/\s+/g, " ")
-                .toLocaleUpperCase("fr-FR");
+        const productionName = normalizeCatalogName(
+            currentPizza.name,
+        );
 
         return settings.pizzas.find(
             (pizza) =>
                 pizza.id === currentPizza.id ||
-                pizza.name
-                    .trim()
-                    .replace(/\s+/g, " ")
-                    .toLocaleUpperCase("fr-FR") ===
-                    normalizedProductionName,
+                normalizeCatalogName(pizza.name) ===
+                    productionName,
         );
-    }, [
-        currentPizza,
-        settings.pizzas,
-    ]);
+    }, [currentPizza, settings.pizzas]);
 
-    const previousPizza =
-        currentPizzaIndex > 0
-            ? pizzas[currentPizzaIndex - 1]
-            : undefined;
-
-    const nextPizza =
-        currentPizzaIndex < pizzas.length - 1
-            ? pizzas[currentPizzaIndex + 1]
-            : undefined;
-
-    const totalQuantity = pizzas.reduce(
-        (total, pizza) => total + pizza.quantity,
-        0,
+    const totalQuantity = useMemo(
+        () =>
+            pizzas.reduce(
+                (total, pizza) =>
+                    total + pizza.quantity,
+                0,
+            ),
+        [pizzas],
     );
 
-    const passedQuantity = pizzas
-        .slice(0, currentPizzaIndex)
-        .reduce(
-            (total, pizza) =>
-                total + pizza.quantity,
-            0,
-        );
-
-    const progressPercentage =
-        totalQuantity > 0
-            ? (passedQuantity / totalQuantity) *
-              100
-            : 0;
-
-    const isFirstPizza =
-        currentPizzaIndex === 0;
-
-    const isLastPizza =
-        currentPizzaIndex === pizzas.length - 1;
-
-    const handlePrevious = () => {
-        if (!isFirstPizza) {
-            setCurrentPizzaIndex(
-                (index) => index - 1,
-            );
-        }
-    };
-
-    const handleNext = () => {
-        if (!isLastPizza) {
-            setCurrentPizzaIndex(
-                (index) => index + 1,
-            );
-        }
-    };
-
-    const handleFinish = () => {
-        setIsCompletionOpen(true);
-    };
-
-    const handleRestart = () => {
-        setCurrentPizzaIndex(0);
-        setIsCompletionOpen(false);
-    };
-
-    const handleReturnToDashboard = () => {
-        navigate("/");
-    };
-
-    const handleCompletedReturnToDashboard =
-        () => {
-            localStorage.removeItem(storageKey);
-            setIsCompletionOpen(false);
-            navigate("/");
-        };
+    const passedQuantity = useMemo(
+        () =>
+            pizzas
+                .slice(0, currentPizzaIndex)
+                .reduce(
+                    (total, pizza) =>
+                        total + pizza.quantity,
+                    0,
+                ),
+        [currentPizzaIndex, pizzas],
+    );
 
     const distributorSummaries = useMemo(() => {
-        const totals = new Map<
-            string,
-            {
-                id: string;
-                name: string;
-                quantity: number;
-            }
-        >();
+        const totals =
+            new Map<string, DistributorSummary>();
 
         for (const pizza of pizzas) {
-            for (
-                const distributor of
-                    pizza.distributors
-            ) {
-                const existingDistributor =
-                    totals.get(distributor.id);
+            for (const distributor of pizza.distributors) {
+                const existing = totals.get(
+                    distributor.id,
+                );
 
-                if (existingDistributor) {
-                    existingDistributor.quantity +=
+                if (existing) {
+                    existing.quantity +=
                         distributor.quantity;
                 } else {
                     totals.set(distributor.id, {
                         id: distributor.id,
                         name: distributor.name,
-                        quantity:
-                            distributor.quantity,
+                        quantity: distributor.quantity,
                     });
                 }
             }
         }
 
-        return Array.from(totals.values())
+        return [...totals.values()]
             .filter(
                 (distributor) =>
                     distributor.quantity > 0,
             )
             .sort(
                 (first, second) =>
-                    second.quantity -
-                    first.quantity,
+                    second.quantity - first.quantity,
             );
     }, [pizzas]);
+
+    const isFirstPizza = currentPizzaIndex === 0;
+    const isLastPizza =
+        currentPizzaIndex === pizzas.length - 1;
+    const progressPercentage =
+        totalQuantity > 0
+            ? (passedQuantity / totalQuantity) * 100
+            : 0;
+
+    const handlePrevious = useCallback(() => {
+        setStoredPizzaIndex((index) =>
+            Math.max(index - 1, 0),
+        );
+    }, []);
+
+    const handleNext = useCallback(() => {
+        setStoredPizzaIndex((index) =>
+            Math.min(index + 1, pizzas.length - 1),
+        );
+    }, [pizzas.length]);
+
+    const handleReturnToDashboard = useCallback(
+        () => navigate("/"),
+        [navigate],
+    );
+
+    const handleCompletedReturnToDashboard =
+        useCallback(() => {
+            localStorage.removeItem(storageKey);
+            setIsCompletionOpen(false);
+            navigate("/");
+        }, [navigate, storageKey]);
+
+    const handleRestart = useCallback(() => {
+        setStoredPizzaIndex(0);
+        setIsCompletionOpen(false);
+    }, []);
 
     useEffect(() => {
         const handleKeyDown = (
             event: KeyboardEvent,
         ) => {
-            const target =
-                event.target as HTMLElement | null;
-
             if (
-                target?.tagName === "INPUT" ||
-                target?.tagName === "TEXTAREA" ||
-                target?.tagName === "SELECT"
+                !canUseAppShortcut(event, {
+                    allowDialog:
+                        isCompletionOpen,
+                    allowInteractiveTarget:
+                        isCompletionOpen,
+                })
             ) {
                 return;
             }
 
             if (isCompletionOpen) {
-                if (event.key === "Escape") {
-                    event.preventDefault();
-                    setIsCompletionOpen(false);
+                const action =
+                    resolveProductionCompleteShortcut(
+                        event.key,
+                    );
+
+                if (!action) {
                     return;
                 }
 
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    handleCompletedReturnToDashboard();
-                    return;
-                }
+                event.preventDefault();
 
-                if (
-                    event.key === "Backspace" ||
-                    event.code === "Backspace"
-                ) {
-                    event.preventDefault();
-                    handleRestart();
-                    return;
+                switch (action) {
+                    case "restart":
+                        handleRestart();
+                        break;
+                    case "dashboard":
+                        handleCompletedReturnToDashboard();
+                        break;
+                    case "close":
+                        setIsCompletionOpen(false);
+                        break;
+                    case "theme":
+                        toggleTheme();
+                        break;
                 }
 
                 return;
@@ -351,30 +309,21 @@ export default function ProductionView() {
             ) {
                 event.preventDefault();
                 handleReturnToDashboard();
-                return;
-            }
-
-            if (
+            } else if (
                 event.key.toLocaleLowerCase(
                     "fr-FR",
                 ) === "p"
             ) {
                 event.preventDefault();
                 navigate("/parametres");
-                return;
-            }
-
-            if (event.key === "ArrowLeft") {
+            } else if (event.key === "ArrowLeft") {
                 event.preventDefault();
                 handlePrevious();
-                return;
-            }
-
-            if (event.key === "ArrowRight") {
+            } else if (event.key === "ArrowRight") {
                 event.preventDefault();
 
                 if (isLastPizza) {
-                    handleFinish();
+                    setIsCompletionOpen(true);
                 } else {
                     handleNext();
                 }
@@ -386,25 +335,32 @@ export default function ProductionView() {
             handleKeyDown,
         );
 
-        return () => {
+        return () =>
             window.removeEventListener(
                 "keydown",
                 handleKeyDown,
             );
-        };
-    });
+    }, [
+        handleCompletedReturnToDashboard,
+        handleNext,
+        handlePrevious,
+        handleRestart,
+        handleReturnToDashboard,
+        isCompletionOpen,
+        isLastPizza,
+        navigate,
+        toggleTheme,
+    ]);
 
     if (!currentPizza || pizzas.length === 0) {
         return (
             <main className="production production--empty">
                 <section className="production-empty">
                     <h1>Aucune production disponible</h1>
-
                     <p>
-                        Chargez une production depuis Gestion
-                        de Parc avant de lancer le mode atelier.
+                        Importez un fichier Excel depuis le
+                        tableau avant de lancer le mode atelier.
                     </p>
-
                     <button
                         className="button button--primary"
                         type="button"
@@ -420,88 +376,12 @@ export default function ProductionView() {
     return (
         <main className="production">
             <div className="production-screen">
-                <AppTopBar
-                    className="production-topbar"
-                    left={
-                        <div className="production-clock">
-                            <strong>
-                                {formatClock(
-                                    currentTime,
-                                )}
-                            </strong>
-
-                            <span>
-                                {formatCurrentDate(
-                                    currentTime,
-                                )}
-                            </span>
-                        </div>
-                    }
-                    center={
-                        <div className="production-progress">
-                            <div className="production-progress__labels">
-                                <strong>
-                                    Progression
-                                </strong>
-
-                                <span>
-                                    {passedQuantity} /{" "}
-                                    {totalQuantity}
-                                </span>
-                            </div>
-
-                            <div
-                                className="production-progress__track"
-                                role="progressbar"
-                                aria-valuemin={0}
-                                aria-valuemax={
-                                    totalQuantity
-                                }
-                                aria-valuenow={
-                                    passedQuantity
-                                }
-                            >
-                                <div
-                                    className="production-progress__value"
-                                    style={{
-                                        width: `${progressPercentage}%`,
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    }
-                    actions={
-                        <>
-                            <button
-                                className="production-settings-button"
-                                type="button"
-                                onClick={() =>
-                                    navigate(
-                                        "/parametres",
-                                    )
-                                }
-                                aria-label="Modifier les paramètres"
-                                title="Paramètres"
-                            >
-                                <span aria-hidden="true">
-                                    ⚙
-                                </span>
-                            </button>
-
-                            <button
-                                className="production-close-button"
-                                type="button"
-                                onClick={
-                                    handleReturnToDashboard
-                                }
-                                aria-label="Quitter le mode production"
-                                title="Retour au tableau"
-                            >
-                                <span aria-hidden="true">
-                                    ×
-                                </span>
-                            </button>
-                        </>
+                <ProductionHeader
+                    currentTime={currentTime}
+                    passedQuantity={passedQuantity}
+                    totalQuantity={totalQuantity}
+                    progressPercentage={
+                        progressPercentage
                     }
                 />
 
@@ -512,13 +392,13 @@ export default function ProductionView() {
                             currentPizza.distributors,
                             settings.distributors,
                         ).map((distributor) => {
-                                const presentation =
-                                    getDistributorPresentation(
-                                        distributor.name,
-                                        settings.distributors,
-                                    );
+                            const presentation =
+                                getDistributorPresentation(
+                                    distributor.name,
+                                    settings.distributors,
+                                );
 
-                                return (
+                            return (
                                 <div
                                     className="production-distributor"
                                     key={distributor.id}
@@ -531,25 +411,19 @@ export default function ProductionView() {
                                                 presentation.foregroundColor,
                                         }}
                                     >
-                                        {
-                                            presentation.shortName
-                                        }
+                                        {presentation.shortName}
                                     </span>
-
                                     <strong
                                         style={{
                                             borderBottomColor:
                                                 presentation.accentColor,
                                         }}
                                     >
-                                        {
-                                            distributor.quantity
-                                        }
+                                        {distributor.quantity}
                                     </strong>
                                 </div>
-                                );
-                            },
-                        )
+                            );
+                        })
                     ) : (
                         <p>
                             Aucune répartition par
@@ -566,7 +440,9 @@ export default function ProductionView() {
                         currentIndex={currentPizzaIndex}
                         totalPizzas={pizzas.length}
                         catalogPizzaId={
-                            currentCatalogPizza?.id
+                            currentCatalogPizza?.imageUpdatedAt
+                                ? currentCatalogPizza.id
+                                : undefined
                         }
                     />
                 </div>
@@ -576,30 +452,30 @@ export default function ProductionView() {
                     isLastPizza={isLastPizza}
                     onPrevious={handlePrevious}
                     onNext={handleNext}
-                    onFinish={handleFinish}
+                    onFinish={() =>
+                        setIsCompletionOpen(true)
+                    }
+                    onOpenSettings={() =>
+                        navigate("/parametres")
+                    }
+                    onReturnToDashboard={
+                        handleReturnToDashboard
+                    }
                 />
 
                 {isCompletionOpen && (
                     <ProductionComplete
-                        totalQuantity={
-                            totalQuantity
-                        }
-                        pizzaCount={
-                            pizzas.length
-                        }
+                        totalQuantity={totalQuantity}
+                        pizzaCount={pizzas.length}
                         distributorSummaries={
                             distributorSummaries
                         }
-                        onRestart={
-                            handleRestart
-                        }
+                        onRestart={handleRestart}
                         onReturnToDashboard={
                             handleCompletedReturnToDashboard
                         }
                         onClose={() =>
-                            setIsCompletionOpen(
-                                false,
-                            )
+                            setIsCompletionOpen(false)
                         }
                     />
                 )}

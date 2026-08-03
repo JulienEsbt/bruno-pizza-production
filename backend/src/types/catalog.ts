@@ -17,6 +17,7 @@ export interface Pizza {
     active: boolean;
     configured: boolean;
     ingredientIds: string[];
+    imageUpdatedAt?: string;
 }
 
 export interface Distributor {

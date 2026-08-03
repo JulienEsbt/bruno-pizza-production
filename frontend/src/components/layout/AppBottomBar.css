@@ -1,0 +1,190 @@
+.app-bottom-bar {
+    z-index: 5;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 14px 14px;
+    padding: 8px;
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(
+                in srgb,
+                var(--surface),
+                transparent 3%
+            ),
+            color-mix(
+                in srgb,
+                var(--surface-subtle),
+                var(--surface) 72%
+            )
+        );
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(14px);
+}
+
+.app-bottom-bar__action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    min-height: 64px;
+    padding: 9px 13px;
+    color: var(--app-text);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-align: left;
+    transition:
+        transform 140ms ease,
+        border-color 140ms ease,
+        background-color 140ms ease,
+        box-shadow 140ms ease;
+}
+
+.app-bottom-bar__action:hover:not(:disabled) {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.app-bottom-bar__action:disabled {
+    cursor: not-allowed;
+    opacity: 0.42;
+}
+
+.app-bottom-bar__action-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 39px;
+    width: 39px;
+    height: 39px;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-radius: 11px;
+    font-size: 1.08rem;
+    font-weight: 900;
+}
+
+.app-bottom-bar__action-copy {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.app-bottom-bar__action-copy strong {
+    overflow: hidden;
+    font-size: 0.86rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-bottom-bar__action-copy small {
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 0.66rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-bottom-bar__action kbd {
+    padding: 2px 5px;
+    color: var(--app-text);
+    background: var(--surface-strong);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font: 700 0.62rem ui-monospace, monospace;
+}
+
+.app-bottom-bar__action-trailing {
+    margin-left: auto;
+    font-size: 1.3rem;
+    font-weight: 900;
+}
+
+.app-bottom-bar__action--danger
+    .app-bottom-bar__action-icon {
+    color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.app-bottom-bar__action--primary,
+.app-bottom-bar__action--success {
+    color: #fff;
+    border-color: transparent;
+}
+
+.app-bottom-bar__action--primary {
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            #4f7ff0
+        );
+}
+
+.app-bottom-bar__action--success {
+    background:
+        linear-gradient(
+            135deg,
+            var(--success),
+            color-mix(
+                in srgb,
+                var(--success),
+                #0f6b4d 38%
+            )
+        );
+}
+
+.app-bottom-bar__action--primary
+    .app-bottom-bar__action-icon,
+.app-bottom-bar__action--success
+    .app-bottom-bar__action-icon {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.app-bottom-bar__action--primary small,
+.app-bottom-bar__action--primary kbd,
+.app-bottom-bar__action--success small,
+.app-bottom-bar__action--success kbd {
+    color: rgba(255, 255, 255, 0.84);
+}
+
+.app-bottom-bar__action--primary kbd,
+.app-bottom-bar__action--success kbd {
+    background: rgba(255, 255, 255, 0.13);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 1180px) {
+    .app-bottom-bar {
+        grid-template-columns: repeat(
+            2,
+            minmax(0, 1fr)
+        );
+    }
+
+    .app-bottom-bar
+        > .keyboard-shortcut-legend {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+}
+
+@media (max-width: 700px) {
+    .app-bottom-bar {
+        grid-template-columns: 1fr;
+        margin: 0 9px 9px;
+    }
+
+    .app-bottom-bar
+        > .keyboard-shortcut-legend {
+        grid-column: auto;
+        grid-row: auto;
+    }
+}

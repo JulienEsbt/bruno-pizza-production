@@ -17,6 +17,7 @@ export interface PizzaCatalogItem {
     active: boolean;
     configured: boolean;
     ingredientIds: string[];
+    imageUpdatedAt?: string;
 }
 
 export interface DistributorCatalogItem {

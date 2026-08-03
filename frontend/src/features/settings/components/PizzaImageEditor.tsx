@@ -7,16 +7,24 @@ import {
     deletePizzaImage,
     getPizzaImageUrl,
     uploadPizzaImage,
-} from "../../../services/settings/pizzaImageApi";
+} from "../services/pizzaImageApi";
+
+import "./PizzaImageEditor.css";
 
 interface PizzaImageEditorProps {
     pizzaId: string;
     pizzaName: string;
+    initialHasImage: boolean;
+    onImageChange?: (
+        version: number | null,
+    ) => void;
 }
 
 export default function PizzaImageEditor({
     pizzaId,
     pizzaName,
+    initialHasImage,
+    onImageChange,
 }: PizzaImageEditorProps) {
     const inputRef =
         useRef<HTMLInputElement>(null);
@@ -25,7 +33,7 @@ export default function PizzaImageEditor({
         useState(() => Date.now());
 
     const [hasImage, setHasImage] =
-        useState(true);
+        useState(initialHasImage);
 
     const [isSaving, setIsSaving] =
         useState(false);
@@ -50,8 +58,10 @@ export default function PizzaImageEditor({
                 file,
             );
 
+            const nextVersion = Date.now();
             setHasImage(true);
-            setVersion(Date.now());
+            setVersion(nextVersion);
+            onImageChange?.(nextVersion);
         } catch (uploadError) {
             setError(
                 uploadError instanceof Error
@@ -83,8 +93,10 @@ export default function PizzaImageEditor({
 
                 await deletePizzaImage(pizzaId);
 
+                const nextVersion = Date.now();
                 setHasImage(false);
-                setVersion(Date.now());
+                setVersion(nextVersion);
+                onImageChange?.(null);
             } catch (deleteError) {
                 setError(
                     deleteError instanceof Error
@@ -181,7 +193,7 @@ export default function PizzaImageEditor({
                 >
                     {hasImage
                         ? "Remplacer"
-                        : "Ajouter"}
+                        : "Ajouter une photo"}
                 </button>
 
                 {hasImage && (

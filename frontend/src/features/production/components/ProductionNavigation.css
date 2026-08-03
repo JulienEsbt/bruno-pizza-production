@@ -1,0 +1,4 @@
+.production-screen
+    > .app-bottom-bar {
+    flex: 0 0 auto;
+}

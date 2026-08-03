@@ -41,9 +41,48 @@ import type {
     UpdateIngredientInput,
     UpdatePizzaInput,
 } from "../types/catalog.js";
+import { preparePizzaImageFileCleanup } from "./pizzaImageService.js";
 
-const normalizeSpaces = (value: string): string => {
-    return value.trim().replace(/\s+/g, " ");
+export class CatalogError extends Error {
+    readonly status: 400 | 404 | 409;
+
+    constructor(message: string) {
+        super(message);
+        this.name = "CatalogError";
+
+        if (message.includes("introuvable")) {
+            this.status = 404;
+        } else if (
+            message.includes("existe déjà") ||
+            message.includes(
+                "Impossible de supprimer",
+            )
+        ) {
+            this.status = 409;
+        } else {
+            this.status = 400;
+        }
+    }
+}
+
+const assertRequestBody = (
+    value: unknown,
+): void => {
+    if (
+        typeof value !== "object" ||
+        value === null ||
+        Array.isArray(value)
+    ) {
+        throw new CatalogError(
+            "Le corps de la requête est invalide.",
+        );
+    }
+};
+
+const normalizeSpaces = (value: unknown): string => {
+    return typeof value === "string"
+        ? value.trim().replace(/\s+/g, " ")
+        : "";
 };
 
 const normalizeDistributorName = (
@@ -52,13 +91,13 @@ const normalizeDistributorName = (
     const normalizedValue = normalizeSpaces(value);
 
     if (!normalizedValue) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom du distributeur est obligatoire.",
         );
     }
 
     if (normalizedValue.length > 100) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom du distributeur ne peut pas dépasser 100 caractères.",
         );
     }
@@ -72,13 +111,13 @@ const normalizeDistributorSourceName = (
     const normalizedValue = normalizeSpaces(value);
 
     if (!normalizedValue) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom provenant du fichier Excel est obligatoire.",
         );
     }
 
     if (normalizedValue.length > 150) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom provenant du fichier Excel ne peut pas dépasser 150 caractères.",
         );
     }
@@ -94,13 +133,13 @@ const normalizeDistributorShortName = (
         .toLocaleUpperCase("fr-FR");
 
     if (!normalizedValue) {
-        throw new Error(
+        throw new CatalogError(
             "L’abréviation du distributeur est obligatoire.",
         );
     }
 
     if (normalizedValue.length > 10) {
-        throw new Error(
+        throw new CatalogError(
             "L’abréviation du distributeur ne peut pas dépasser 10 caractères.",
         );
     }
@@ -109,14 +148,18 @@ const normalizeDistributorShortName = (
 };
 
 const normalizeHexColor = (
-    value: string,
+    value: unknown,
     fieldLabel: string,
 ): string => {
     const normalizedValue =
-        value.trim().toLocaleUpperCase("fr-FR");
+        typeof value === "string"
+            ? value
+                  .trim()
+                  .toLocaleUpperCase("fr-FR")
+            : "";
 
     if (!/^#[0-9A-F]{6}$/.test(normalizedValue)) {
-        throw new Error(
+        throw new CatalogError(
             `${fieldLabel} doit être une couleur hexadécimale au format #RRGGBB.`,
         );
     }
@@ -130,13 +173,13 @@ const normalizeIngredientName = (
     const normalizedValue = normalizeSpaces(value);
 
     if (!normalizedValue) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom de l’ingrédient est obligatoire.",
         );
     }
 
     if (normalizedValue.length > 100) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom de l’ingrédient ne peut pas dépasser 100 caractères.",
         );
     }
@@ -155,13 +198,13 @@ const normalizePizzaName = (
     const normalizedValue = normalizeSpaces(value);
 
     if (!normalizedValue) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom de la pizza est obligatoire.",
         );
     }
 
     if (normalizedValue.length > 100) {
-        throw new Error(
+        throw new CatalogError(
             "Le nom de la pizza ne peut pas dépasser 100 caractères.",
         );
     }
@@ -179,7 +222,7 @@ function assertPizzaBase(
         value !== "cream" &&
         value !== "other"
     ) {
-        throw new Error(
+        throw new CatalogError(
             "La base de la pizza est invalide.",
         );
     }
@@ -189,7 +232,7 @@ const assertDistributorExists = (
     distributorId: string,
 ): void => {
     if (!distributorExists(distributorId)) {
-        throw new Error(
+        throw new CatalogError(
             "Distributeur introuvable.",
         );
     }
@@ -199,7 +242,7 @@ const assertIngredientExists = (
     ingredientId: string,
 ): void => {
     if (!ingredientExists(ingredientId)) {
-        throw new Error(
+        throw new CatalogError(
             `L’ingrédient « ${ingredientId} » n’existe pas.`,
         );
     }
@@ -209,7 +252,7 @@ const assertPizzaExists = (
     pizzaId: string,
 ): void => {
     if (!pizzaExists(pizzaId)) {
-        throw new Error("Pizza introuvable.");
+        throw new CatalogError("Pizza introuvable.");
     }
 };
 
@@ -217,7 +260,7 @@ const validateIngredientIds = (
     ingredientIds: unknown,
 ): string[] => {
     if (!Array.isArray(ingredientIds)) {
-        throw new Error(
+        throw new CatalogError(
             "La liste des ingrédients est invalide.",
         );
     }
@@ -229,7 +272,7 @@ const validateIngredientIds = (
                 !ingredientId.trim(),
         )
     ) {
-        throw new Error(
+        throw new CatalogError(
             "La liste des ingrédients contient une valeur invalide.",
         );
     }
@@ -252,12 +295,14 @@ export const getCatalog = (): Catalog => {
 export const createIngredient = (
     input: CreateIngredientInput,
 ): Catalog => {
+    assertRequestBody(input);
+
     const name = normalizeIngredientName(
         input.name,
     );
 
     if (ingredientNameExists(name)) {
-        throw new Error(
+        throw new CatalogError(
             "Un ingrédient portant ce nom existe déjà.",
         );
     }
@@ -271,6 +316,7 @@ export const updateIngredient = (
     ingredientId: string,
     input: UpdateIngredientInput,
 ): Catalog => {
+    assertRequestBody(input);
     assertIngredientExists(ingredientId);
 
     const update: {
@@ -289,7 +335,7 @@ export const updateIngredient = (
                 ingredientId,
             )
         ) {
-            throw new Error(
+            throw new CatalogError(
                 "Un ingrédient portant ce nom existe déjà.",
             );
         }
@@ -299,7 +345,7 @@ export const updateIngredient = (
 
     if (input.active !== undefined) {
         if (typeof input.active !== "boolean") {
-            throw new Error(
+            throw new CatalogError(
                 "L’état de l’ingrédient est invalide.",
             );
         }
@@ -324,7 +370,7 @@ export const deleteIngredient = (
         countIngredientUsages(ingredientId);
 
     if (usageCount > 0) {
-        throw new Error(
+        throw new CatalogError(
             `Impossible de supprimer cet ingrédient : il est encore utilisé par ${usageCount} pizza${usageCount > 1 ? "s" : ""}. Retirez-le d’abord des recettes concernées.`,
         );
     }
@@ -337,12 +383,14 @@ export const deleteIngredient = (
 export const createPizza = (
     input: CreatePizzaInput,
 ): Catalog => {
+    assertRequestBody(input);
+
     const name = normalizePizzaName(input.name);
 
     assertPizzaBase(input.base);
 
     if (pizzaNameExists(name)) {
-        throw new Error(
+        throw new CatalogError(
             "Une pizza portant ce nom existe déjà.",
         );
     }
@@ -361,6 +409,7 @@ export const updatePizza = (
     pizzaId: string,
     input: UpdatePizzaInput,
 ): Catalog => {
+    assertRequestBody(input);
     assertPizzaExists(pizzaId);
 
     return runInTransaction(() => {
@@ -379,7 +428,7 @@ export const updatePizza = (
             if (
                 pizzaNameExists(name, pizzaId)
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "Une pizza portant ce nom existe déjà.",
                 );
             }
@@ -425,7 +474,7 @@ export const updatePizza = (
                 typeof input.configured !==
                 "boolean"
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "L’état de configuration de la pizza est invalide.",
                 );
             }
@@ -441,7 +490,7 @@ export const updatePizza = (
                 input.configured &&
                 ingredientCount === 0
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "Une pizza sans ingrédient ne peut pas être marquée comme configurée.",
                 );
             }
@@ -452,7 +501,7 @@ export const updatePizza = (
 
         if (input.active !== undefined) {
             if (typeof input.active !== "boolean") {
-                throw new Error(
+                throw new CatalogError(
                     "L’état de la pizza est invalide.",
                 );
             }
@@ -466,7 +515,7 @@ export const updatePizza = (
                           );
 
                 if (ingredientCount === 0) {
-                    throw new Error(
+                    throw new CatalogError(
                         "Une pizza sans recette ne peut pas être activée.",
                     );
                 }
@@ -483,7 +532,7 @@ export const updatePizza = (
             if (
                 !Number.isInteger(input.order)
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "L’ordre de la pizza doit être un nombre entier.",
                 );
             }
@@ -498,7 +547,7 @@ export const updatePizza = (
                 input.order < 1 ||
                 input.order > maximumOrder
             ) {
-                throw new Error(
+                throw new CatalogError(
                     `L’ordre de la pizza doit être compris entre 1 et ${maximumOrder}.`,
                 );
             }
@@ -529,7 +578,10 @@ export const deletePizza = (
 ): Catalog => {
     assertPizzaExists(pizzaId);
 
-    return runInTransaction(() => {
+    const cleanupImageFile =
+        preparePizzaImageFileCleanup(pizzaId);
+
+    const catalog = runInTransaction(() => {
         removePizza(pizzaId);
 
         replacePizzaOrder(
@@ -538,12 +590,25 @@ export const deletePizza = (
 
         return getCatalog();
     });
+
+    try {
+        cleanupImageFile();
+    } catch (error) {
+        console.error(
+            `Impossible de supprimer le fichier image de la pizza ${pizzaId} :`,
+            error,
+        );
+    }
+
+    return catalog;
 };
 
 
 export const createDistributor = (
     input: CreateDistributorInput,
 ): Catalog => {
+    assertRequestBody(input);
+
     const name = normalizeDistributorName(
         input.name,
     );
@@ -577,7 +642,7 @@ export const createDistributor = (
         );
 
     if (distributorNameExists(name)) {
-        throw new Error(
+        throw new CatalogError(
             "Un distributeur portant ce nom existe déjà.",
         );
     }
@@ -585,7 +650,7 @@ export const createDistributor = (
     if (
         distributorSourceNameExists(sourceName)
     ) {
-        throw new Error(
+        throw new CatalogError(
             "Un distributeur utilisant déjà ce nom Excel existe.",
         );
     }
@@ -593,7 +658,7 @@ export const createDistributor = (
     if (
         distributorShortNameExists(shortName)
     ) {
-        throw new Error(
+        throw new CatalogError(
             "Un distributeur portant cette abréviation existe déjà.",
         );
     }
@@ -616,6 +681,7 @@ export const updateDistributor = (
     distributorId: string,
     input: UpdateDistributorInput,
 ): Catalog => {
+    assertRequestBody(input);
     assertDistributorExists(distributorId);
 
     return runInTransaction(() => {
@@ -641,7 +707,7 @@ export const updateDistributor = (
                     distributorId,
                 )
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "Un distributeur portant ce nom existe déjà.",
                 );
             }
@@ -662,7 +728,7 @@ export const updateDistributor = (
                     distributorId,
                 )
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "Un distributeur utilisant déjà ce nom Excel existe.",
                 );
             }
@@ -682,7 +748,7 @@ export const updateDistributor = (
                     distributorId,
                 )
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "Un distributeur portant cette abréviation existe déjà.",
                 );
             }
@@ -692,7 +758,7 @@ export const updateDistributor = (
 
         if (input.active !== undefined) {
             if (typeof input.active !== "boolean") {
-                throw new Error(
+                throw new CatalogError(
                     "L’état du distributeur est invalide.",
                 );
             }
@@ -737,7 +803,7 @@ export const updateDistributor = (
             if (
                 !Number.isInteger(input.order)
             ) {
-                throw new Error(
+                throw new CatalogError(
                     "L’ordre du distributeur doit être un nombre entier.",
                 );
             }
@@ -752,7 +818,7 @@ export const updateDistributor = (
                 input.order < 1 ||
                 input.order > maximumOrder
             ) {
-                throw new Error(
+                throw new CatalogError(
                     `L’ordre du distributeur doit être compris entre 1 et ${maximumOrder}.`,
                 );
             }

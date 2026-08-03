@@ -11,6 +11,7 @@ import {
     deletePizzaImage,
     findPizzaImage,
     getPizzaImageFilePath,
+    PizzaImageError,
     savePizzaImage,
 } from "../services/pizzaImageService.js";
 
@@ -42,7 +43,7 @@ const upload = multer({
             )
         ) {
             callback(
-                new Error(
+                new PizzaImageError(
                     "Le fichier doit être une image JPEG, PNG ou WebP.",
                 ),
             );
@@ -65,19 +66,6 @@ const sendImageError = (
         error,
     );
 
-    const message =
-        error instanceof Error
-            ? error.message
-            : "Erreur inconnue lors de la gestion de la photo.";
-
-    if (message === "Pizza introuvable.") {
-        response.status(404).json({
-            error: message,
-        });
-
-        return;
-    }
-
     if (
         error instanceof multer.MulterError &&
         error.code === "LIMIT_FILE_SIZE"
@@ -90,8 +78,16 @@ const sendImageError = (
         return;
     }
 
-    response.status(400).json({
-        error: message,
+    if (error instanceof PizzaImageError) {
+        response.status(error.status).json({
+            error: error.message,
+        });
+        return;
+    }
+
+    response.status(500).json({
+        error:
+            "Une erreur interne est survenue pendant la gestion de la photo.",
     });
 };
 
@@ -131,7 +127,7 @@ pizzaImageRouter.get(
 
             response.setHeader(
                 "Cache-Control",
-                "public, max-age=3600",
+                "private, no-cache",
             );
 
             response.sendFile(filePath);

@@ -1,77 +1,68 @@
+import { useEffect } from "react";
+
 import {
-    type ChangeEvent,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+    AppBottomBarAction,
+} from "../../../components/layout/AppBottomBar";
+import { canUseAppShortcut } from "../../../shared/keyboard/keyboardShortcuts";
+import type { ExcelProductionImportController } from "../hooks/useExcelProductionImport";
 
-import { useProduction } from "../../../hooks/useProduction";
-import { useSettings } from "../../../hooks/useSettings";
-import { parseProductionExcelFile } from "../../../services/production/excelProductionService";
-
-interface ImportReport {
-    importedPizzaCount: number;
-    matchedPizzaCount: number;
-    unmatchedPizzaNames: string[];
+interface ExcelImportButtonProps {
+    importer: ExcelProductionImportController;
 }
 
-const normalizeForComparison = (
-    value: string,
-): string => {
-    return value
-        .trim()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLocaleLowerCase("fr-FR")
-        .replace(/[^a-z0-9]+/g, " ")
-        .trim()
-        .replace(/\s+/g, " ");
-};
+interface ReportListProps {
+    title: string;
+    names: string[];
+    keyPrefix: string;
+}
 
-const isTypingTarget = (
-    target: EventTarget | null,
-): boolean => {
-    if (!(target instanceof HTMLElement)) {
-        return false;
+function ReportList({
+    title,
+    names,
+    keyPrefix,
+}: ReportListProps) {
+    if (names.length === 0) {
+        return null;
     }
 
     return (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.tagName === "SELECT" ||
-        target.isContentEditable
+        <>
+            <p>{title}</p>
+
+            <ul>
+                {names.map((name) => (
+                    <li key={`${keyPrefix}-${name}`}>
+                        {name}
+                    </li>
+                ))}
+            </ul>
+        </>
     );
-};
+}
 
-export default function ExcelImportButton() {
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    const { setProduction } = useProduction();
-    const { settings } = useSettings();
-
-    const [isImporting, setIsImporting] =
-        useState(false);
-
-    const [errorMessage, setErrorMessage] = useState<
-        string | null
-    >(null);
-
-    const [importReport, setImportReport] =
-        useState<ImportReport | null>(null);
-
-    const handleButtonClick = () => {
-        inputRef.current?.click();
-    };
+export default function ExcelImportButton({
+    importer,
+}: ExcelImportButtonProps) {
+    const {
+        inputRef,
+        isImporting,
+        isCatalogLoading,
+        isDisabled,
+        errorMessage,
+        importReport,
+        reportHasWarning,
+        openFilePicker,
+        handleFileChange,
+        clearFeedback,
+    } = importer;
 
     useEffect(() => {
         const handleKeyDown = (
             event: KeyboardEvent,
         ) => {
             if (
-                isTypingTarget(event.target) ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.altKey
+                !canUseAppShortcut(event) ||
+                isDisabled
             ) {
                 return;
             }
@@ -82,7 +73,7 @@ export default function ExcelImportButton() {
                 ) === "i"
             ) {
                 event.preventDefault();
-                inputRef.current?.click();
+                openFilePicker();
             }
         };
 
@@ -97,124 +88,7 @@ export default function ExcelImportButton() {
                 handleKeyDown,
             );
         };
-    }, []);
-
-    useEffect(() => {
-        if (!importReport && !errorMessage) {
-            return;
-        }
-
-        const timeoutId = window.setTimeout(() => {
-            setImportReport(null);
-            setErrorMessage(null);
-        }, 7000);
-
-        return () => {
-            window.clearTimeout(timeoutId);
-        };
-    }, [errorMessage, importReport]);
-
-    const handleFileChange = async (
-        event: ChangeEvent<HTMLInputElement>,
-    ) => {
-        const file = event.target.files?.[0];
-
-        if (!file) {
-            return;
-        }
-
-        try {
-            setIsImporting(true);
-            setErrorMessage(null);
-            setImportReport(null);
-
-            const importedProduction =
-                await parseProductionExcelFile(file);
-
-            const ingredientsById = new Map(
-                settings.ingredients.map(
-                    (ingredient) => [
-                        ingredient.id,
-                        ingredient.name,
-                    ],
-                ),
-            );
-
-            const catalogPizzasByName = new Map(
-                settings.pizzas.map((pizza) => [
-                    normalizeForComparison(pizza.name),
-                    pizza,
-                ]),
-            );
-
-            const unmatchedPizzaNames: string[] = [];
-            let matchedPizzaCount = 0;
-
-            const enrichedPizzas =
-                importedProduction.pizzas.map(
-                    (importedPizza) => {
-                        const catalogPizza =
-                            catalogPizzasByName.get(
-                                normalizeForComparison(
-                                    importedPizza.name,
-                                ),
-                            );
-
-                        if (!catalogPizza) {
-                            unmatchedPizzaNames.push(
-                                importedPizza.name,
-                            );
-
-                            return importedPizza;
-                        }
-
-                        matchedPizzaCount += 1;
-
-                        const ingredients =
-                            catalogPizza.ingredientIds
-                                .map((ingredientId) =>
-                                    ingredientsById.get(
-                                        ingredientId,
-                                    ),
-                                )
-                                .filter(
-                                    (
-                                        ingredientName,
-                                    ): ingredientName is string =>
-                                        Boolean(
-                                            ingredientName,
-                                        ),
-                                );
-
-                        return {
-                            ...importedPizza,
-                            ingredients,
-                        };
-                    },
-                );
-
-            setProduction({
-                ...importedProduction,
-                pizzas: enrichedPizzas,
-            });
-
-            setImportReport({
-                importedPizzaCount:
-                    importedProduction.pizzas.length,
-                matchedPizzaCount,
-                unmatchedPizzaNames,
-            });
-        } catch (error) {
-            setErrorMessage(
-                error instanceof Error
-                    ? error.message
-                    : "Une erreur inconnue est survenue pendant l’import.",
-            );
-        } finally {
-            setIsImporting(false);
-            event.target.value = "";
-        }
-    };
+    }, [isDisabled, openFilePicker]);
 
     return (
         <div className="excel-import">
@@ -223,42 +97,32 @@ export default function ExcelImportButton() {
                 className="excel-import__input"
                 type="file"
                 accept=".xlsx,.xls"
+                aria-label="Sélectionner le fichier Excel de production"
                 onChange={handleFileChange}
             />
 
-            <button
-                className="dashboard-action dashboard-action--import"
-                type="button"
-                onClick={handleButtonClick}
-                disabled={isImporting}
-            >
-                <span
-                    className="dashboard-action__icon"
-                    aria-hidden="true"
-                >
-                    ↑
-                </span>
-
-                <span>
-                    <strong>
-                        {isImporting
-                            ? "Import en cours…"
-                            : "Importer un Excel"}
-                    </strong>
-
-                    <small>
-                        <kbd>I</kbd> Nouvelle production
-                    </small>
-                </span>
-            </button>
+            <AppBottomBarAction
+                icon="↑"
+                label={
+                    isImporting
+                        ? "Import en cours…"
+                        : isCatalogLoading
+                          ? "Chargement du catalogue…"
+                          : "Importer un Excel"
+                }
+                shortcut="I"
+                hint="Nouvelle production"
+                aria-keyshortcuts="I"
+                onClick={openFilePicker}
+                disabled={isDisabled}
+            />
 
             {(importReport || errorMessage) && (
                 <section
                     className={[
                         "excel-import-toast",
                         errorMessage ||
-                        importReport?.unmatchedPizzaNames
-                            .length
+                        reportHasWarning
                             ? "excel-import-toast--warning"
                             : "excel-import-toast--success",
                     ].join(" ")}
@@ -266,10 +130,9 @@ export default function ExcelImportButton() {
                 >
                     <button
                         type="button"
-                        onClick={() => {
-                            setImportReport(null);
-                            setErrorMessage(null);
-                        }}
+                        onClick={
+                            clearFeedback
+                        }
                         aria-label="Fermer le message"
                     >
                         ×
@@ -277,47 +140,57 @@ export default function ExcelImportButton() {
 
                     {errorMessage ? (
                         <>
-                            <strong>Import impossible</strong>
-                            <p>{errorMessage}</p>
+                            <strong>
+                                Import impossible
+                            </strong>
+                            <p>
+                                {
+                                    errorMessage
+                                }
+                            </p>
                         </>
                     ) : importReport ? (
                         <>
                             <strong>
-                                {importReport.matchedPizzaCount} /{" "}
+                                {
+                                    importReport.matchedPizzaCount
+                                }{" "}
+                                /{" "}
                                 {
                                     importReport.importedPizzaCount
                                 }{" "}
                                 recettes reconnues
                             </strong>
 
-                            {importReport.unmatchedPizzaNames
-                                .length > 0 ? (
-                                <>
-                                    <p>
-                                        Recettes absentes du
-                                        catalogue :
-                                    </p>
+                            <ReportList
+                                title="Recettes absentes du catalogue :"
+                                names={
+                                    importReport.unmatchedPizzaNames
+                                }
+                                keyPrefix="unmatched"
+                            />
 
-                                    <ul>
-                                        {importReport.unmatchedPizzaNames.map(
-                                            (pizzaName) => (
-                                                <li
-                                                    key={
-                                                        pizzaName
-                                                    }
-                                                >
-                                                    {
-                                                        pizzaName
-                                                    }
-                                                </li>
-                                            ),
-                                        )}
-                                    </ul>
-                                </>
-                            ) : (
+                            <ReportList
+                                title="Recettes à configurer :"
+                                names={
+                                    importReport.unconfiguredPizzaNames
+                                }
+                                keyPrefix="unconfigured"
+                            />
+
+                            <ReportList
+                                title="Pizzas inactives présentes dans la production :"
+                                names={
+                                    importReport.inactivePizzaNames
+                                }
+                                keyPrefix="inactive"
+                            />
+
+                            {!reportHasWarning && (
                                 <p>
                                     Toutes les pizzas ont été
-                                    associées à leur recette.
+                                    associées à une recette
+                                    active et configurée.
                                 </p>
                             )}
                         </>

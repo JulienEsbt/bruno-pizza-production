@@ -1,29 +1,69 @@
 import {
+    useCallback,
+    useEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-import AppTopBar from "../../components/layout/AppTopBar";
+import AppBottomBar, {
+    AppBottomBarAction,
+} from "../../components/layout/AppBottomBar";
+import KeyboardShortcutLegend, {
+    type KeyboardShortcutItem,
+} from "../../components/keyboard/KeyboardShortcutLegend";
+import { useProduction } from "../../hooks/useProduction";
 import { useSettings } from "../../hooks/useSettings";
-import DistributorSettingsPanel from "./components/DistributorSettingsPanel";
-import PizzaCatalogWorkspace from "./components/PizzaCatalogWorkspace";
-import SettingsCreateDialog from "./components/SettingsCreateDialog";
-
+import {
+    canUseAppShortcut,
+    resolveSettingsShortcut,
+} from "../../shared/keyboard/keyboardShortcuts";
 import type {
+    DistributorCatalogItem,
     PizzaCatalogItem,
 } from "../../types/settings";
+import DistributorSettingsPanel from "./components/DistributorSettingsPanel";
+import IngredientSettingsPanel from "./components/IngredientSettingsPanel";
+import PizzaCatalogWorkspace from "./components/PizzaCatalogWorkspace";
+import SettingsCreateDialog from "./components/SettingsCreateDialog";
+import SettingsHeader from "./components/SettingsHeader";
+import SettingsNavigation, {
+    type SettingsTab,
+} from "./components/SettingsNavigation";
 
 import "./SettingsView.css";
 
-type SettingsTab =
-    | "pizzas"
-    | "ingredients"
-    | "distributors";
+const normalizeSearch = (value: string): string =>
+    value.trim().toLocaleLowerCase("fr-FR");
+
+const CREATE_ENTITY_LABELS: Record<
+    SettingsTab,
+    string
+> = {
+    pizzas: "Nouvelle pizza",
+    ingredients: "Nouvel ingrédient",
+    distributors: "Nouveau distributeur",
+};
+
+const SETTINGS_SHORTCUTS = [
+    {
+        key: "1 2 3",
+        label: "Onglets",
+    },
+    {
+        key: "F",
+        label: "Recherche",
+    },
+    {
+        key: "T",
+        label: "Thème",
+    },
+] satisfies KeyboardShortcutItem[];
 
 export default function SettingsView() {
     const navigate = useNavigate();
-
+    const { production } = useProduction();
     const {
         settings,
         isLoading,
@@ -44,103 +84,121 @@ export default function SettingsView() {
 
     const [activeTab, setActiveTab] =
         useState<SettingsTab>("pizzas");
-
     const [search, setSearch] = useState("");
-
-    const [
-        isCreateDialogOpen,
-        setIsCreateDialogOpen,
-    ] = useState(false);
-
+    const [isCreateDialogOpen, setIsCreateDialogOpen] =
+        useState(false);
+    const searchInputRef =
+        useRef<HTMLInputElement>(null);
     const [
         selectedIngredientByPizza,
         setSelectedIngredientByPizza,
     ] = useState<Record<string, string>>({});
 
+    const normalizedSearch = normalizeSearch(search);
+    const hasProduction =
+        production.pizzas.length > 0;
+
+    const handleTabChange = useCallback(
+        (tab: SettingsTab) => {
+            setActiveTab(tab);
+            setSearch("");
+        },
+        [],
+    );
+
+    const handleCreate = useCallback(() => {
+        setIsCreateDialogOpen(true);
+    }, []);
+
+    const handleReload = useCallback(() => {
+        void reloadSettings();
+    }, [reloadSettings]);
+
+    const handleOpenProduction = useCallback(() => {
+        if (hasProduction) {
+            navigate("/production");
+        }
+    }, [hasProduction, navigate]);
+
+    const handleReturnToDashboard =
+        useCallback(() => {
+            navigate("/");
+        }, [navigate]);
+
     const ingredientsById = useMemo(
         () =>
             new Map(
-                settings.ingredients.map(
-                    (ingredient) => [
-                        ingredient.id,
-                        ingredient,
-                    ],
-                ),
+                settings.ingredients.map((ingredient) => [
+                    ingredient.id,
+                    ingredient,
+                ]),
             ),
         [settings.ingredients],
     );
 
-    const displayedPizzas = useMemo(() => {
-        const normalizedSearch = search
-            .trim()
-            .toLocaleLowerCase("fr-FR");
+    const displayedPizzas = useMemo(
+        () =>
+            [...settings.pizzas]
+                .filter((pizza) =>
+                    pizza.name
+                        .toLocaleLowerCase("fr-FR")
+                        .includes(normalizedSearch),
+                )
+                .sort(
+                    (first, second) =>
+                        first.order - second.order,
+                ),
+        [normalizedSearch, settings.pizzas],
+    );
 
-        return [...settings.pizzas]
-            .filter((pizza) =>
-                pizza.name
-                    .toLocaleLowerCase("fr-FR")
-                    .includes(normalizedSearch),
-            )
-            .sort(
-                (firstPizza, secondPizza) =>
-                    firstPizza.order -
-                    secondPizza.order,
-            );
-    }, [search, settings.pizzas]);
-
-    const displayedIngredients = useMemo(() => {
-        const normalizedSearch = search
-            .trim()
-            .toLocaleLowerCase("fr-FR");
-
-        return [...settings.ingredients]
-            .filter((ingredient) =>
-                ingredient.name
-                    .toLocaleLowerCase("fr-FR")
-                    .includes(normalizedSearch),
-            )
-            .sort(
-                (
-                    firstIngredient,
-                    secondIngredient,
-                ) =>
-                    firstIngredient.name.localeCompare(
-                        secondIngredient.name,
+    const displayedIngredients = useMemo(
+        () =>
+            [...settings.ingredients]
+                .filter((ingredient) =>
+                    ingredient.name
+                        .toLocaleLowerCase("fr-FR")
+                        .includes(normalizedSearch),
+                )
+                .sort((first, second) =>
+                    first.name.localeCompare(
+                        second.name,
                         "fr",
                     ),
-            );
-    }, [search, settings.ingredients]);
+                ),
+        [normalizedSearch, settings.ingredients],
+    );
 
-    const activePizzaCount =
-        settings.pizzas.filter(
-            (pizza) => pizza.active,
-        ).length;
-
-    const activeIngredientCount =
-        settings.ingredients.filter(
-            (ingredient) => ingredient.active,
-        ).length;
-
-    const activeDistributorCount =
-        settings.distributors.filter(
-            (distributor) => distributor.active,
-        ).length;
+    const displayedDistributorCount = useMemo(
+        () =>
+            settings.distributors.filter((distributor) =>
+                [
+                    distributor.name,
+                    distributor.sourceName,
+                    distributor.shortName,
+                ].some((value) =>
+                    value
+                        .toLocaleLowerCase("fr-FR")
+                        .includes(normalizedSearch),
+                ),
+            ).length,
+        [normalizedSearch, settings.distributors],
+    );
 
     const handleDeletePizza = async (
         pizza: PizzaCatalogItem,
     ): Promise<void> => {
-        const confirmed = window.confirm(
-            `Supprimer définitivement la pizza « ${pizza.name} » ?`,
-        );
-
-        if (!confirmed) {
+        if (
+            !window.confirm(
+                `Supprimer définitivement la pizza « ${pizza.name} » ?`,
+            )
+        ) {
             return;
         }
 
         try {
             await deletePizza(pizza.id);
         } catch {
-            // Le contexte affiche déjà l’erreur.
+            // L’erreur est déjà affichée par le contexte.
         }
     };
 
@@ -153,130 +211,204 @@ export default function SettingsView() {
             window.alert(
                 `Impossible de supprimer « ${ingredientName} » : cet ingrédient est encore utilisé par ${usageCount} pizza${usageCount > 1 ? "s" : ""}.`,
             );
-
             return;
         }
 
-        const confirmed = window.confirm(
-            `Supprimer définitivement l’ingrédient « ${ingredientName} » ?`,
-        );
-
-        if (!confirmed) {
+        if (
+            !window.confirm(
+                `Supprimer définitivement l’ingrédient « ${ingredientName} » ?`,
+            )
+        ) {
             return;
         }
 
         try {
             await deleteIngredient(ingredientId);
         } catch {
-            // Le contexte affiche déjà l’erreur.
+            // L’erreur est déjà affichée par le contexte.
         }
     };
 
-    const handleAddIngredientToPizza =
-        async (
-            pizza: PizzaCatalogItem,
-        ): Promise<void> => {
-            const ingredientId =
-                selectedIngredientByPizza[
-                    pizza.id
-                ];
+    const handleDeleteDistributor = async (
+        distributor: DistributorCatalogItem,
+    ): Promise<void> => {
+        const distributorName =
+            distributor.name ||
+            distributor.shortName;
 
-            if (
-                !ingredientId ||
-                pizza.ingredientIds.includes(
+        if (
+            !window.confirm(
+                [
+                    `Supprimer définitivement le distributeur « ${distributorName} » ?`,
+                    "",
+                    "Cette action supprimera sa configuration et ne pourra pas être annulée.",
+                ].join("\n"),
+            )
+        ) {
+            return;
+        }
+
+        try {
+            await deleteDistributor(
+                distributor.id,
+            );
+        } catch {
+            // L’erreur est déjà affichée par le contexte.
+        }
+    };
+
+    const handleAddIngredientToPizza = async (
+        pizza: PizzaCatalogItem,
+    ): Promise<void> => {
+        const ingredientId =
+            selectedIngredientByPizza[pizza.id];
+
+        if (
+            !ingredientId ||
+            pizza.ingredientIds.includes(ingredientId)
+        ) {
+            return;
+        }
+
+        try {
+            await updatePizza(pizza.id, {
+                ingredientIds: [
+                    ...pizza.ingredientIds,
                     ingredientId,
-                )
-            ) {
-                return;
-            }
+                ],
+                configured: true,
+            });
+            setSelectedIngredientByPizza(
+                (currentSelection) => ({
+                    ...currentSelection,
+                    [pizza.id]: "",
+                }),
+            );
+        } catch {
+            // L’erreur est déjà affichée par le contexte.
+        }
+    };
 
-            try {
-                await updatePizza(pizza.id, {
-                    ingredientIds: [
-                        ...pizza.ingredientIds,
-                        ingredientId,
-                    ],
-                    configured: true,
-                });
-
-                setSelectedIngredientByPizza(
-                    (currentSelection) => ({
-                        ...currentSelection,
-                        [pizza.id]: "",
-                    }),
-                );
-            } catch {
-                // Erreur déjà affichée.
-            }
-        };
-
-    const handleRemoveIngredientFromPizza =
-        async (
-            pizza: PizzaCatalogItem,
-            ingredientId: string,
-        ): Promise<void> => {
-            try {
-                await updatePizza(pizza.id, {
-                    ingredientIds:
-                        pizza.ingredientIds.filter(
-                            (
-                                currentIngredientId,
-                            ) =>
-                                currentIngredientId !==
-                                ingredientId,
-                        ),
-                });
-            } catch {
-                // Erreur déjà affichée.
-            }
-        };
-
-    const createButtonLabel =
-        activeTab === "pizzas"
-            ? "Ajouter une pizza"
-            : activeTab === "ingredients"
-              ? "Ajouter un ingrédient"
-              : "Ajouter un distributeur";
+    const handleRemoveIngredientFromPizza = async (
+        pizza: PizzaCatalogItem,
+        ingredientId: string,
+    ): Promise<void> => {
+        try {
+            await updatePizza(pizza.id, {
+                ingredientIds: pizza.ingredientIds.filter(
+                    (currentId) =>
+                        currentId !== ingredientId,
+                ),
+            });
+        } catch {
+            // L’erreur est déjà affichée par le contexte.
+        }
+    };
 
     const displayedResultCount =
         activeTab === "pizzas"
             ? displayedPizzas.length
             : activeTab === "ingredients"
               ? displayedIngredients.length
-              : settings.distributors.filter(
-                    (distributor) => {
-                        const normalizedSearch =
-                            search
-                                .trim()
-                                .toLocaleLowerCase(
-                                    "fr-FR",
-                                );
+              : displayedDistributorCount;
 
-                        return [
-                            distributor.name,
-                            distributor.sourceName,
-                            distributor.shortName,
-                        ].some((value) =>
-                            value
-                                .toLocaleLowerCase(
-                                    "fr-FR",
-                                )
-                                .includes(
-                                    normalizedSearch,
-                                ),
-                        );
-                    },
-                ).length;
+    useEffect(() => {
+        const handleKeyDown = (
+            event: KeyboardEvent,
+        ) => {
+            if (
+                isCreateDialogOpen ||
+                !canUseAppShortcut(event)
+            ) {
+                return;
+            }
+
+            const action =
+                resolveSettingsShortcut(
+                    event.key,
+                    event.code,
+                );
+
+            if (!action) {
+                return;
+            }
+
+            if (
+                action === "production" &&
+                !hasProduction
+            ) {
+                return;
+            }
+
+            if (
+                (action === "create" ||
+                    action === "reload") &&
+                (isLoading || isSaving)
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+
+            switch (action) {
+                case "dashboard":
+                    handleReturnToDashboard();
+                    break;
+                case "production":
+                    handleOpenProduction();
+                    break;
+                case "pizzas":
+                    handleTabChange("pizzas");
+                    break;
+                case "ingredients":
+                    handleTabChange("ingredients");
+                    break;
+                case "distributors":
+                    handleTabChange(
+                        "distributors",
+                    );
+                    break;
+                case "search":
+                    searchInputRef.current?.focus();
+                    break;
+                case "create":
+                    handleCreate();
+                    break;
+                case "reload":
+                    handleReload();
+                    break;
+            }
+        };
+
+        window.addEventListener(
+            "keydown",
+            handleKeyDown,
+        );
+
+        return () =>
+            window.removeEventListener(
+                "keydown",
+                handleKeyDown,
+            );
+    }, [
+        handleCreate,
+        handleOpenProduction,
+        handleReload,
+        handleReturnToDashboard,
+        handleTabChange,
+        hasProduction,
+        isCreateDialogOpen,
+        isLoading,
+        isSaving,
+    ]);
 
     if (isLoading) {
         return (
             <main className="settings-page">
                 <section className="settings-state">
                     <h1>Chargement du catalogue</h1>
-
                     <p>
-                        Lecture des pizzas et ingrédients
-                        depuis SQLite…
+                        Lecture des données depuis SQLite…
                     </p>
                 </section>
             </main>
@@ -286,114 +418,32 @@ export default function SettingsView() {
     return (
         <main className="settings-page">
             <div className="settings-page__screen">
-                <AppTopBar
-                    className="settings-topbar"
-                    left={
-                        <div className="app-page-heading">
-                            <p className="app-page-heading__eyebrow">
-                                Configuration métier
-                            </p>
-
-                            <h1>Paramètres</h1>
-
-                            <span className="app-page-heading__subtitle">
-                                Le catalogue est enregistré dans la base SQLite commune à l’application.
-                            </span>
-                        </div>
+                <SettingsHeader
+                    activePizzaCount={
+                        settings.pizzas.filter(
+                            (pizza) => pizza.active,
+                        ).length
                     }
-                    center={
-                        <div className="settings-header__summary">
-                            <article className="settings-summary-card">
-                                <span
-                                    className="settings-summary-card__icon"
-                                    aria-hidden="true"
-                                >
-                                    🍕
-                                </span>
-
-                                <div>
-                                    <small>
-                                        Pizzas actives
-                                    </small>
-
-                                    <strong>
-                                        {activePizzaCount}
-                                        <span>
-                                            {" / "}
-                                            {settings.pizzas.length}
-                                        </span>
-                                    </strong>
-                                </div>
-                            </article>
-
-                            <article className="settings-summary-card">
-                                <span
-                                    className="settings-summary-card__icon"
-                                    aria-hidden="true"
-                                >
-                                    🌿
-                                </span>
-
-                                <div>
-                                    <small>
-                                        Ingrédients actifs
-                                    </small>
-
-                                    <strong>
-                                        {activeIngredientCount}
-                                        <span>
-                                            {" / "}
-                                            {settings.ingredients.length}
-                                        </span>
-                                    </strong>
-                                </div>
-                            </article>
-
-                            <article className="settings-summary-card">
-                                <span
-                                    className="settings-summary-card__icon"
-                                    aria-hidden="true"
-                                >
-                                    🚚
-                                </span>
-
-                                <div>
-                                    <small>
-                                        Distributeurs actifs
-                                    </small>
-
-                                    <strong>
-                                        {activeDistributorCount}
-                                        <span>
-                                            {" / "}
-                                            {settings.distributors.length}
-                                        </span>
-                                    </strong>
-                                </div>
-                            </article>
-
-                            <article className="settings-summary-card settings-summary-card--save">
-                                <span
-                                    className="settings-summary-card__icon"
-                                    aria-hidden="true"
-                                >
-                                    💾
-                                </span>
-
-                                <div>
-                                    <small>
-                                        Enregistrement
-                                    </small>
-
-                                    <strong className="settings-save-status">
-                                        {isSaving
-                                            ? "En cours…"
-                                            : "À jour"}
-                                    </strong>
-                                </div>
-                            </article>
-                        </div>
+                    pizzaCount={settings.pizzas.length}
+                    activeIngredientCount={
+                        settings.ingredients.filter(
+                            (ingredient) =>
+                                ingredient.active,
+                        ).length
                     }
+                    ingredientCount={
+                        settings.ingredients.length
+                    }
+                    activeDistributorCount={
+                        settings.distributors.filter(
+                            (distributor) =>
+                                distributor.active,
+                        ).length
+                    }
+                    distributorCount={
+                        settings.distributors.length
+                    }
+                    isSaving={isSaving}
                 />
 
                 {error && (
@@ -405,173 +455,37 @@ export default function SettingsView() {
                             <strong>
                                 Impossible d’enregistrer
                             </strong>
-
                             <span>{error}</span>
                         </div>
-
                         <button
                             type="button"
+                            aria-label="Fermer le message"
                             onClick={clearError}
                         >
                             ×
                         </button>
                     </div>
                 )}
-                <section className="settings-navigation-bar">
 
-                <nav
-                    className="settings-tabs"
-                    aria-label="Sections des paramètres"
-                >
-                    <button
-                        className={
-                            activeTab === "pizzas"
-                                ? "settings-tabs__button settings-tabs__button--active"
-                                : "settings-tabs__button"
-                        }
-                        type="button"
-                        onClick={() => {
-                            setActiveTab("pizzas");
-                            setSearch("");
-                        }}
-                    >
-                        Pizzas
-
-                        <strong>
-                            {settings.pizzas.length}
-                        </strong>
-                    </button>
-
-                    <button
-                        className={
-                            activeTab === "ingredients"
-                                ? "settings-tabs__button settings-tabs__button--active"
-                                : "settings-tabs__button"
-                        }
-                        type="button"
-                        onClick={() => {
-                            setActiveTab(
-                                "ingredients",
-                            );
-
-                            setSearch("");
-                        }}
-                    >
-                        Ingrédients
-
-                        <strong>
-                            {
-                                settings.ingredients
-                                    .length
-                            }
-                        </strong>
-                    </button>
-
-                    <button
-                        className={
-                            activeTab === "distributors"
-                                ? "settings-tabs__button settings-tabs__button--active"
-                                : "settings-tabs__button"
-                        }
-                        type="button"
-                        onClick={() => {
-                            setActiveTab(
-                                "distributors",
-                            );
-
-                            setSearch("");
-                        }}
-                    >
-                        Distributeurs
-
-                        <strong>
-                            {
-                                settings.distributors
-                                    .length
-                            }
-                        </strong>
-                    </button>
-                </nav>
-
-                    <label className="settings-navigation-search">
-                        <span className="settings-navigation-search__label">
-                            {
-                                activeTab === "pizzas"
-                                    ? "Rechercher une pizza"
-                                    : activeTab === "ingredients"
-                                      ? "Rechercher un ingrédient"
-                                      : "Rechercher un distributeur"
-                            }
-                        </span>
-
-                        <span className="settings-navigation-search__field">
-                            <span
-                                className="settings-navigation-search__icon"
-                                aria-hidden="true"
-                            >
-                                ⌕
-                            </span>
-
-                            <input
-                                type="search"
-                                value={search}
-                                placeholder={
-                                    activeTab === "pizzas"
-                                        ? "Ex. REINE"
-                                        : activeTab === "ingredients"
-                                          ? "Ex. Mix E-M"
-                                          : "Ex. Turenne"
-                                }
-                                onChange={(event) =>
-                                    setSearch(
-                                        event.target.value,
-                                    )
-                                }
-                            />
-
-                            {search && (
-                                <button
-                                    type="button"
-                                    aria-label="Effacer la recherche"
-                                    title="Effacer la recherche"
-                                    onClick={() =>
-                                        setSearch("")
-                                    }
-                                >
-                                    ×
-                                </button>
-                            )}
-                        </span>
-                    </label>
-
-                    <div className="settings-navigation-bar__actions">
-                        <span>
-                            {displayedResultCount} résultat
-                            {displayedResultCount > 1
-                                ? "s"
-                                : ""}
-                        </span>
-
-                        <button
-                            className="settings-navigation-add"
-                            type="button"
-                            disabled={isSaving}
-                            onClick={() =>
-                                setIsCreateDialogOpen(
-                                    true,
-                                )
-                            }
-                        >
-                            <strong
-                                aria-hidden="true"
-                            >
-                                +
-                            </strong>
-
-                            {createButtonLabel}
-                        </button>
-                    </div>
-                </section>
+                <SettingsNavigation
+                    activeTab={activeTab}
+                    counts={{
+                        pizzas: settings.pizzas.length,
+                        ingredients:
+                            settings.ingredients.length,
+                        distributors:
+                            settings.distributors.length,
+                    }}
+                    displayedResultCount={
+                        displayedResultCount
+                    }
+                    search={search}
+                    isSaving={isSaving}
+                    searchInputRef={searchInputRef}
+                    onTabChange={handleTabChange}
+                    onSearchChange={setSearch}
+                    onCreate={handleCreate}
+                />
 
                 {activeTab === "pizzas" ? (
                     <PizzaCatalogWorkspace
@@ -592,9 +506,7 @@ export default function SettingsView() {
                         setSelectedIngredientByPizza={
                             setSelectedIngredientByPizza
                         }
-                        onUpdatePizza={
-                            updatePizza
-                        }
+                        onUpdatePizza={updatePizza}
                         onDeletePizza={
                             handleDeletePizza
                         }
@@ -605,163 +517,18 @@ export default function SettingsView() {
                             handleRemoveIngredientFromPizza
                         }
                     />
-                ) : activeTab ===
-                    "ingredients" ? (
-                    <section className="settings-catalog settings-catalog--single-bar">
-                        <div className="settings-catalog__table">
-                            <table className="settings-ingredient-table">
-                                <thead>
-                                    <tr>
-                                        <th>État</th>
-                                        <th>Nom officiel</th>
-                                        <th>
-                                            Utilisé par
-                                        </th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {displayedIngredients.map(
-                                        (ingredient) => {
-                                            const usedByPizzaCount =
-                                                settings.pizzas.filter(
-                                                    (
-                                                        pizza,
-                                                    ) =>
-                                                        pizza.ingredientIds.includes(
-                                                            ingredient.id,
-                                                        ),
-                                                ).length;
-
-                                            return (
-                                                <tr
-                                                    key={
-                                                        ingredient.id
-                                                    }
-                                                >
-                                                    <td>
-                                                        <label className="settings-toggle">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={
-                                                                    ingredient.active
-                                                                }
-                                                                disabled={
-                                                                    isSaving
-                                                                }
-                                                                onChange={(
-                                                                    event,
-                                                                ) =>
-                                                                    void updateIngredient(
-                                                                        ingredient.id,
-                                                                        {
-                                                                            active:
-                                                                                event
-                                                                                    .target
-                                                                                    .checked,
-                                                                        },
-                                                                    )
-                                                                }
-                                                            />
-
-                                                            <span>
-                                                                {ingredient.active
-                                                                    ? "Actif"
-                                                                    : "Inactif"}
-                                                            </span>
-                                                        </label>
-                                                    </td>
-
-                                                    <td>
-                                                        <input
-                                                            className="settings-table__ingredient-name"
-                                                            type="text"
-                                                            defaultValue={
-                                                                ingredient.name
-                                                            }
-                                                            disabled={
-                                                                isSaving
-                                                            }
-                                                            onBlur={(
-                                                                event,
-                                                            ) => {
-                                                                const name =
-                                                                    event
-                                                                        .target
-                                                                        .value
-                                                                        .trim()
-                                                                        .replace(
-                                                                            /\s+/g,
-                                                                            " ",
-                                                                        );
-
-                                                                event.target.value =
-                                                                    name;
-
-                                                                if (
-                                                                    name &&
-                                                                    name !==
-                                                                        ingredient.name
-                                                                ) {
-                                                                    void updateIngredient(
-                                                                        ingredient.id,
-                                                                        {
-                                                                            name,
-                                                                        },
-                                                                    );
-                                                                }
-                                                            }}
-                                                        />
-                                                    </td>
-
-                                                    <td>
-                                                        <strong>
-                                                            {
-                                                                usedByPizzaCount
-                                                            }
-                                                        </strong>{" "}
-                                                        pizza
-                                                        {usedByPizzaCount >
-                                                        1
-                                                            ? "s"
-                                                            : ""}
-                                                    </td>
-
-                                                    <td>
-                                                        <button
-                                                            className="settings-delete-button"
-                                                            type="button"
-                                                            disabled={
-                                                                isSaving ||
-                                                                usedByPizzaCount >
-                                                                    0
-                                                            }
-                                                            title={
-                                                                usedByPizzaCount >
-                                                                0
-                                                                    ? "Retirez d’abord cet ingrédient des recettes."
-                                                                    : "Supprimer cet ingrédient"
-                                                            }
-                                                            onClick={() =>
-                                                                void handleDeleteIngredient(
-                                                                    ingredient.id,
-                                                                    ingredient.name,
-                                                                    usedByPizzaCount,
-                                                                )
-                                                            }
-                                                        >
-                                                            Supprimer
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        },
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                ) : activeTab === "ingredients" ? (
+                    <IngredientSettingsPanel
+                        ingredients={
+                            displayedIngredients
+                        }
+                        pizzas={settings.pizzas}
+                        isSaving={isSaving}
+                        onUpdate={updateIngredient}
+                        onDelete={
+                            handleDeleteIngredient
+                        }
+                    />
                 ) : (
                     <DistributorSettingsPanel
                         distributors={
@@ -769,11 +536,9 @@ export default function SettingsView() {
                         }
                         search={search}
                         isSaving={isSaving}
-                        onUpdate={
-                            updateDistributor
-                        }
+                        onUpdate={updateDistributor}
                         onDelete={
-                            deleteDistributor
+                            handleDeleteDistributor
                         }
                     />
                 )}
@@ -784,9 +549,7 @@ export default function SettingsView() {
                         isOpen
                         isSaving={isSaving}
                         onClose={() =>
-                            setIsCreateDialogOpen(
-                                false,
-                            )
+                            setIsCreateDialogOpen(false)
                         }
                         onCreatePizza={addPizza}
                         onCreateIngredient={
@@ -798,33 +561,58 @@ export default function SettingsView() {
                     />
                 )}
 
-                <footer className="settings-actions">
-                    <span
-                        className="settings-actions__spacer"
-                        aria-hidden="true"
+                <AppBottomBar ariaLabel="Commandes des paramètres">
+                    <AppBottomBarAction
+                        icon="↻"
+                        label="Actualiser le catalogue"
+                        shortcut="R"
+                        hint="Relire SQLite"
+                        aria-keyshortcuts="R"
+                        disabled={
+                            isLoading || isSaving
+                        }
+                        title="Relire les données enregistrées dans SQLite — raccourci R"
+                        onClick={handleReload}
                     />
 
-                    <div>
-                        <button
-                            className="settings-button settings-button--secondary"
-                            type="button"
-                            disabled={isLoading}
-                            onClick={() =>
-                                void reloadSettings()
-                            }
-                        >
-                            Recharger les données
-                        </button>
+                    <AppBottomBarAction
+                        icon="＋"
+                        label={
+                            CREATE_ENTITY_LABELS[
+                                activeTab
+                            ]
+                        }
+                        shortcut="N"
+                        hint="Ajouter"
+                        aria-keyshortcuts="N"
+                        disabled={isSaving}
+                        onClick={handleCreate}
+                    />
 
-                        <button
-                            className="settings-button settings-button--primary"
-                            type="button"
-                            onClick={() => navigate("/")}
-                        >
-                            Retour au tableau
-                        </button>
-                    </div>
-                </footer>
+                    <KeyboardShortcutLegend
+                        items={SETTINGS_SHORTCUTS}
+                    />
+
+                    <AppBottomBarAction
+                        icon="▶"
+                        label="Production"
+                        shortcut="Entrée"
+                        hint="Reprendre"
+                        aria-keyshortcuts="Enter"
+                        disabled={!hasProduction}
+                        onClick={handleOpenProduction}
+                    />
+
+                    <AppBottomBarAction
+                        icon="↩"
+                        label="Dashboard"
+                        shortcut="Échap"
+                        hint="Retour"
+                        tone="primary"
+                        aria-keyshortcuts="Escape"
+                        onClick={handleReturnToDashboard}
+                    />
+                </AppBottomBar>
             </div>
         </main>
     );

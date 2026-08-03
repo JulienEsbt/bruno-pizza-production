@@ -17,32 +17,29 @@ export default function AppTopBar({
     left,
     center,
     actions,
-    className = "",
+    className,
 }: AppTopBarProps) {
     return (
         <header
-            className={[
-                "app-topbar",
-                className,
-            ]
+            className={["bp-topbar", className]
                 .filter(Boolean)
                 .join(" ")}
         >
-            <section className="app-topbar__left">
+            <div className="bp-topbar__left">
                 {left}
-            </section>
+            </div>
 
-            <section className="app-topbar__center">
+            <div className="bp-topbar__center">
                 {center}
-            </section>
+            </div>
 
-            <section className="app-topbar__actions">
+            <div className="bp-topbar__actions">
                 {actions}
-            </section>
+            </div>
 
-            <section className="app-topbar__theme">
+            <div className="bp-topbar__theme">
                 <GlobalThemeSwitch />
-            </section>
+            </div>
         </header>
     );
 }

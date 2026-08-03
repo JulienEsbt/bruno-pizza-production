@@ -33,6 +33,7 @@ interface PizzaRow {
     display_order: number;
     active: number;
     configured: number;
+    image_updated_at: string | null;
 }
 
 interface MappingRow {
@@ -98,14 +99,19 @@ export const getCatalogFromDatabase = (): Catalog => {
     const pizzaRows = database
         .prepare(`
             SELECT
-                id,
-                name,
-                base,
-                display_order,
-                active,
-                configured
+                pizzas.id,
+                pizzas.name,
+                pizzas.base,
+                pizzas.display_order,
+                pizzas.active,
+                pizzas.configured,
+                pizza_images.updated_at AS image_updated_at
             FROM pizzas
-            ORDER BY display_order, name COLLATE NOCASE
+            LEFT JOIN pizza_images
+                ON pizza_images.pizza_id = pizzas.id
+            ORDER BY
+                pizzas.display_order,
+                pizzas.name COLLATE NOCASE
         `)
         .all() as unknown as PizzaRow[];
 
@@ -171,6 +177,12 @@ export const getCatalogFromDatabase = (): Catalog => {
             ingredientIds:
                 ingredientIdsByPizzaId.get(row.id) ??
                 [],
+            ...(row.image_updated_at
+                ? {
+                      imageUpdatedAt:
+                          row.image_updated_at,
+                  }
+                : {}),
         }),
     );
 

@@ -1,0 +1,111 @@
+.production-clock,
+.production-progress {
+    color: var(--app-text);
+    background:
+        linear-gradient(
+            135deg,
+            var(--surface),
+            color-mix(
+                in srgb,
+                var(--primary-soft),
+                var(--surface) 72%
+            )
+        );
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow:
+        var(--shadow-sm),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.production-clock {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 2px;
+    width: 176px;
+    height: 100%;
+    padding: 7px 12px;
+}
+
+.production-clock strong {
+    font-size: 1.46rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.production-clock span {
+    color: var(--text-muted);
+    max-width: 150px;
+    overflow: hidden;
+    font-size: 0.61rem;
+    font-weight: 750;
+    text-align: center;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.production-progress {
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+    padding: 8px 16px;
+}
+
+.production-progress__labels {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.production-progress__labels strong {
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.065em;
+    text-transform: uppercase;
+}
+
+.production-progress__labels span {
+    font-size: 0.98rem;
+    font-weight: 900;
+}
+
+.production-progress__track {
+    width: 100%;
+    height: 15px;
+    overflow: hidden;
+    background: var(--surface-strong);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+}
+
+.production-progress__value {
+    height: 100%;
+    background:
+        linear-gradient(
+            90deg,
+            var(--primary),
+            #4f83ff 55%,
+            #78a4ff
+        );
+    border-radius: inherit;
+    box-shadow: 0 0 14px
+        color-mix(
+            in srgb,
+            var(--primary),
+            transparent 44%
+        );
+    transition: width 200ms ease;
+}
+
+@media (max-width: 680px) {
+    .production-clock {
+        width: 100%;
+        min-width: 0;
+    }
+}

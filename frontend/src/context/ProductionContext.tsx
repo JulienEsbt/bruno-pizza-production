@@ -3,6 +3,7 @@
 import {
     createContext,
     type ReactNode,
+    useCallback,
     useEffect,
     useMemo,
     useState,
@@ -11,10 +12,13 @@ import {
 import type { ProductionDay } from "../types/production";
 
 const STORAGE_KEY = "bruno-pizza-production";
+const STORAGE_VERSION = 2;
 
 const createEmptyProduction = (): ProductionDay => ({
     date: "",
-    updatedAt: "",
+    sourceUpdatedAt: "",
+    importedAt: "",
+    sourceFileName: "",
     source: "empty",
     pizzas: [],
 });
@@ -47,14 +51,58 @@ const isStoredProductionValid = (
 
     return (
         typeof production.date === "string" &&
-        typeof production.updatedAt === "string" &&
+        typeof production.sourceUpdatedAt === "string" &&
+        typeof production.importedAt === "string" &&
+        typeof production.sourceFileName === "string" &&
         Array.isArray(production.pizzas) &&
-        (
-            production.source === "api" ||
-            production.source === "excel"
-        )
+        production.source === "excel" &&
+        production.pizzas.every((pizza) => {
+            if (
+                typeof pizza !== "object" ||
+                pizza === null
+            ) {
+                return false;
+            }
+
+            const candidate =
+                pizza as Partial<
+                    ProductionDay["pizzas"][number]
+                >;
+
+            return (
+                typeof candidate.id === "string" &&
+                typeof candidate.name === "string" &&
+                typeof candidate.quantity === "number" &&
+                Number.isInteger(candidate.quantity) &&
+                candidate.quantity > 0 &&
+                Array.isArray(candidate.ingredients) &&
+                candidate.ingredients.every(
+                    (ingredient) =>
+                        typeof ingredient === "string",
+                ) &&
+                Array.isArray(candidate.distributors) &&
+                candidate.distributors.every(
+                    (distributor) =>
+                        typeof distributor === "object" &&
+                        distributor !== null &&
+                        typeof distributor.id === "string" &&
+                        typeof distributor.name === "string" &&
+                        typeof distributor.quantity ===
+                            "number" &&
+                        Number.isInteger(
+                            distributor.quantity,
+                        ) &&
+                        distributor.quantity > 0,
+                )
+            );
+        })
     );
 };
+
+interface StoredProductionEnvelope {
+    version: number;
+    production: unknown;
+}
 
 const loadStoredProduction = (): ProductionDay => {
     try {
@@ -65,15 +113,29 @@ const loadStoredProduction = (): ProductionDay => {
             return createEmptyProduction();
         }
 
-        const parsedProduction: unknown =
+        const parsedValue: unknown =
             JSON.parse(storedProduction);
 
-        if (!isStoredProductionValid(parsedProduction)) {
+        if (
+            typeof parsedValue !== "object" ||
+            parsedValue === null
+        ) {
             localStorage.removeItem(STORAGE_KEY);
             return createEmptyProduction();
         }
 
-        return parsedProduction;
+        const envelope =
+            parsedValue as Partial<StoredProductionEnvelope>;
+
+        if (
+            envelope.version !== STORAGE_VERSION ||
+            !isStoredProductionValid(envelope.production)
+        ) {
+            localStorage.removeItem(STORAGE_KEY);
+            return createEmptyProduction();
+        }
+
+        return envelope.production;
     } catch {
         localStorage.removeItem(STORAGE_KEY);
         return createEmptyProduction();
@@ -94,14 +156,17 @@ export function ProductionProvider({
 
         localStorage.setItem(
             STORAGE_KEY,
-            JSON.stringify(production),
+            JSON.stringify({
+                version: STORAGE_VERSION,
+                production,
+            }),
         );
     }, [production]);
 
-    const resetProduction = () => {
+    const resetProduction = useCallback(() => {
         localStorage.removeItem(STORAGE_KEY);
         setProduction(createEmptyProduction());
-    };
+    }, []);
 
     const value = useMemo(
         () => ({
@@ -109,7 +174,7 @@ export function ProductionProvider({
             setProduction,
             resetProduction,
         }),
-        [production],
+        [production, resetProduction],
     );
 
     return (

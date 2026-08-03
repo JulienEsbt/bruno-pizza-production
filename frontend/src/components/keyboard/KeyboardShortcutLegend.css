@@ -1,0 +1,54 @@
+.keyboard-shortcut-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 64px;
+    padding: 7px 10px;
+    color: var(--app-text);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+}
+
+.keyboard-shortcut-legend__items {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 5px 10px;
+    min-width: 0;
+}
+
+.keyboard-shortcut-legend__items > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-muted);
+    font-size: 0.66rem;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.keyboard-shortcut-legend kbd {
+    min-width: 22px;
+    padding: 3px 5px;
+    color: var(--app-text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    box-shadow: 0 2px 0
+        color-mix(
+            in srgb,
+            var(--border-strong),
+            transparent 35%
+        );
+    font: 850 0.62rem ui-monospace, monospace;
+    text-align: center;
+}
+
+@media (max-width: 1180px) {
+    .keyboard-shortcut-legend {
+        min-height: 40px;
+    }
+}

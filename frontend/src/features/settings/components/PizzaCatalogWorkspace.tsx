@@ -8,7 +8,7 @@ import type {
     SetStateAction,
 } from "react";
 
-import { getPizzaImageUrl } from "../../../services/settings/pizzaImageApi";
+import { getPizzaImageUrl } from "../services/pizzaImageApi";
 
 import type {
     IngredientCatalogItem,
@@ -17,7 +17,11 @@ import type {
     PizzaCatalogUpdate,
 } from "../../../types/settings";
 
+import ActivationControl from "./ActivationControl";
 import PizzaImageEditor from "./PizzaImageEditor";
+
+import "./PizzaCatalogWorkspace.css";
+import "./PizzaRecipeEditor.css";
 
 const BASE_LABELS: Record<PizzaBase, string> = {
     tomato: "Base tomate",
@@ -102,6 +106,10 @@ export default function PizzaCatalogWorkspace({
         dragTargetIngredientId,
         setDragTargetIngredientId,
     ] = useState<string | null>(null);
+    const [imageVersions, setImageVersions] =
+        useState<
+            Record<string, number | null>
+        >({});
 
     const effectiveSelectedPizzaId =
         pizzas.some(
@@ -283,6 +291,20 @@ export default function PizzaCatalogWorkspace({
                         const isSelected =
                             pizza.id ===
                             selectedPizza.id;
+                        const localImageVersion =
+                            imageVersions[pizza.id];
+                        const hasImage =
+                            localImageVersion ===
+                            undefined
+                                ? Boolean(
+                                      pizza.imageUpdatedAt,
+                                  )
+                                : localImageVersion !==
+                                  null;
+                        const imageVersion =
+                            localImageVersion ??
+                            pizza.imageUpdatedAt ??
+                            0;
 
                         return (
                             <button
@@ -299,6 +321,11 @@ export default function PizzaCatalogWorkspace({
                                     .join(" ")}
                                 type="button"
                                 key={pizza.id}
+                                aria-current={
+                                    isSelected
+                                        ? "true"
+                                        : undefined
+                                }
                                 onClick={() =>
                                     setSelectedPizzaId(
                                         pizza.id,
@@ -326,17 +353,16 @@ export default function PizzaCatalogWorkspace({
                                         ◎
                                     </span>
 
-                                    <img
-                                        src={getPizzaImageUrl(
-                                            pizza.id,
-                                            0,
-                                        )}
-                                        alt=""
-                                        onError={(event) => {
-                                            event.currentTarget.style.display =
-                                                "none";
-                                        }}
-                                    />
+                                    {hasImage && (
+                                        <img
+                                            key={`${pizza.id}-${imageVersion}`}
+                                            src={getPizzaImageUrl(
+                                                pizza.id,
+                                                imageVersion,
+                                            )}
+                                            alt=""
+                                        />
+                                    )}
                                 </span>
 
                                 <span className="pizza-catalog-item__content">
@@ -374,29 +400,54 @@ export default function PizzaCatalogWorkspace({
                 </div>
             </aside>
 
-            <article className="pizza-workspace__editor">
+            <article
+                className="pizza-workspace__editor"
+                aria-labelledby="selected-pizza-title"
+            >
                 <header className="pizza-editor-header">
-                    <div>
-                        <span>
-                            Pizza sélectionnée
-                        </span>
-
-                        <div className="pizza-editor-header__title">
-                            <h2>
-                                {selectedPizza.name}
-                            </h2>
-
-                            <span
-                                className={
-                                    selectedPizza.active
-                                        ? "pizza-editor-status pizza-editor-status--active"
-                                        : "pizza-editor-status"
-                                }
-                            >
-                                {selectedPizza.active
-                                    ? "Active"
-                                    : "Inactive"}
+                    <div className="pizza-editor-selection">
+                        <div className="pizza-editor-selection__content">
+                            <span>
+                                Pizza sélectionnée
                             </span>
+
+                            <div className="pizza-editor-header__title">
+                                <h2 id="selected-pizza-title">
+                                    {selectedPizza.name}
+                                </h2>
+
+                                <span
+                                    className={
+                                        selectedPizza.active
+                                            ? "pizza-editor-status pizza-editor-status--active"
+                                            : "pizza-editor-status"
+                                    }
+                                >
+                                    {selectedPizza.active
+                                        ? "Active"
+                                        : "Inactive"}
+                                </span>
+                            </div>
+
+                            <small>
+                                {
+                                    BASE_LABELS[
+                                        selectedPizza.base
+                                    ]
+                                }
+                                {" · "}
+                                {
+                                    selectedPizza
+                                        .ingredientIds
+                                        .length
+                                }{" "}
+                                ingrédient
+                                {selectedPizza
+                                    .ingredientIds
+                                    .length > 1
+                                    ? "s"
+                                    : ""}
+                            </small>
                         </div>
                     </div>
 
@@ -414,206 +465,295 @@ export default function PizzaCatalogWorkspace({
                     </button>
                 </header>
 
-                <div className="pizza-editor-identity">
-                    <div className="pizza-editor-fields">
-                        <label className="pizza-editor-field">
-                            <span>Nom</span>
+                <div className="pizza-editor-body">
+                    <aside className="pizza-editor-identity">
+                        <section className="pizza-editor-quick-settings">
+                            <header className="pizza-editor-quick-settings__header">
+                                <div className="pizza-editor-section-heading">
+                                    <span
+                                        aria-hidden="true"
+                                    >
+                                        ✦
+                                    </span>
 
-                            <input
-                                key={`pizza-name-${selectedPizza.id}`}
-                                type="text"
-                                defaultValue={
-                                    selectedPizza.name
-                                }
-                                disabled={isSaving}
-                                onBlur={(event) => {
-                                    const normalizedName =
-                                        normalizePizzaName(
-                                            event.target
-                                                .value,
-                                        );
+                                    <div>
+                                        <strong>
+                                            Configuration
+                                            rapide
+                                        </strong>
+                                        <small>
+                                            Identité et
+                                            visibilité dans le
+                                            catalogue
+                                        </small>
+                                    </div>
+                                </div>
 
-                                    event.target.value =
-                                        normalizedName;
+                                <div className="pizza-editor-global-order">
+                                    <span>
+                                        Position
+                                    </span>
 
-                                    if (
-                                        normalizedName &&
-                                        normalizedName !==
-                                            selectedPizza.name
-                                    ) {
-                                        void onUpdatePizza(
-                                            selectedPizza.id,
-                                            {
-                                                name: normalizedName,
-                                            },
-                                        );
-                                    }
-                                }}
-                            />
-                        </label>
-
-                        <label className="pizza-editor-field">
-                            <span>Base</span>
-
-                            <select
-                                value={
-                                    selectedPizza.base
-                                }
-                                disabled={isSaving}
-                                onChange={(event) =>
-                                    void onUpdatePizza(
-                                        selectedPizza.id,
-                                        {
-                                            base: event
-                                                .target
-                                                .value as PizzaBase,
-                                        },
-                                    )
-                                }
-                            >
-                                {Object.entries(
-                                    BASE_LABELS,
-                                ).map(
-                                    ([
-                                        value,
-                                        label,
-                                    ]) => (
-                                        <option
-                                            key={value}
-                                            value={value}
+                                    <div>
+                                        <button
+                                            type="button"
+                                            title="Monter cette pizza"
+                                            disabled={
+                                                isSaving ||
+                                                selectedPizza.order <=
+                                                    1
+                                            }
+                                            onClick={() =>
+                                                void onUpdatePizza(
+                                                    selectedPizza.id,
+                                                    {
+                                                        order:
+                                                            selectedPizza.order -
+                                                            1,
+                                                    },
+                                                )
+                                            }
                                         >
-                                            {label}
-                                        </option>
-                                    ),
-                                )}
-                            </select>
-                        </label>
+                                            ▲
+                                        </button>
 
-                        <label className="pizza-editor-active">
-                            <input
-                                type="checkbox"
-                                checked={
+                                        <strong>
+                                            {
+                                                selectedPizza.order
+                                            }
+                                        </strong>
+
+                                        <button
+                                            type="button"
+                                            title="Descendre cette pizza"
+                                            disabled={
+                                                isSaving ||
+                                                selectedPizza.order >=
+                                                    totalPizzaCount
+                                            }
+                                            onClick={() =>
+                                                void onUpdatePizza(
+                                                    selectedPizza.id,
+                                                    {
+                                                        order:
+                                                            selectedPizza.order +
+                                                            1,
+                                                    },
+                                                )
+                                            }
+                                        >
+                                            ▼
+                                        </button>
+                                    </div>
+                                </div>
+                            </header>
+
+                            <div className="pizza-editor-fields">
+                                <label className="pizza-editor-field">
+                                    <span>Nom</span>
+
+                                    <input
+                                        key={`pizza-name-${selectedPizza.id}`}
+                                        type="text"
+                                        defaultValue={
+                                            selectedPizza.name
+                                        }
+                                        disabled={isSaving}
+                                        onBlur={(event) => {
+                                            const normalizedName =
+                                                normalizePizzaName(
+                                                    event
+                                                        .target
+                                                        .value,
+                                                );
+
+                                            event.target.value =
+                                                normalizedName;
+
+                                            if (
+                                                normalizedName &&
+                                                normalizedName !==
+                                                    selectedPizza.name
+                                            ) {
+                                                void onUpdatePizza(
+                                                    selectedPizza.id,
+                                                    {
+                                                        name: normalizedName,
+                                                    },
+                                                );
+                                            }
+                                        }}
+                                    />
+                                </label>
+
+                                <label className="pizza-editor-field">
+                                    <span>Base</span>
+
+                                    <select
+                                        value={
+                                            selectedPizza.base
+                                        }
+                                        disabled={isSaving}
+                                        onChange={(event) =>
+                                            void onUpdatePizza(
+                                                selectedPizza.id,
+                                                {
+                                                    base: event
+                                                        .target
+                                                        .value as PizzaBase,
+                                                },
+                                            )
+                                        }
+                                    >
+                                        {Object.entries(
+                                            BASE_LABELS,
+                                        ).map(
+                                            ([
+                                                value,
+                                                label,
+                                            ]) => (
+                                                <option
+                                                    key={
+                                                        value
+                                                    }
+                                                    value={
+                                                        value
+                                                    }
+                                                >
+                                                    {
+                                                        label
+                                                    }
+                                                </option>
+                                            ),
+                                        )}
+                                    </select>
+                                </label>
+                            </div>
+
+                            <ActivationControl
+                                active={
                                     selectedPizza.active
                                 }
+                                activeLabel="Active"
+                                inactiveLabel="Inactive"
                                 disabled={isSaving}
-                                onChange={(event) =>
+                                variant="card"
+                                description={
+                                    selectedPizza.active
+                                        ? "Visible dans le tableau et disponible pour la production"
+                                        : "Masquée du catalogue de production"
+                                }
+                                onChange={(active) =>
                                     void onUpdatePizza(
                                         selectedPizza.id,
                                         {
-                                            active: event
-                                                .target
-                                                .checked,
+                                            active,
                                         },
                                     )
                                 }
                             />
+                        </section>
 
-                            <span>
-                                Pizza active dans le
-                                catalogue
-                            </span>
-                        </label>
-                    </div>
+                        <section className="pizza-editor-photo">
+                            <header className="pizza-editor-photo__header">
+                                <span
+                                    aria-hidden="true"
+                                >
+                                    ◎
+                                </span>
 
-                    <div className="pizza-editor-photo">
-                        <span>Photo</span>
+                                <div>
+                                    <strong>
+                                        Visuel de
+                                        production
+                                    </strong>
+                                    <small>
+                                        Photo affichée pendant
+                                        la fabrication
+                                    </small>
+                                </div>
+                            </header>
 
-                        <PizzaImageEditor
-                            key={selectedPizza.id}
-                            pizzaId={
-                                selectedPizza.id
-                            }
-                            pizzaName={
-                                selectedPizza.name
-                            }
-                        />
-                    </div>
-
-                    <div className="pizza-editor-global-order">
-                        <span>
-                            Ordre catalogue
-                        </span>
-
-                        <div>
-                            <button
-                                type="button"
-                                title="Monter cette pizza"
-                                disabled={
-                                    isSaving ||
-                                    selectedPizza.order <=
-                                        1
+                            <PizzaImageEditor
+                                key={selectedPizza.id}
+                                pizzaId={
+                                    selectedPizza.id
                                 }
-                                onClick={() =>
-                                    void onUpdatePizza(
-                                        selectedPizza.id,
-                                        {
-                                            order:
-                                                selectedPizza.order -
-                                                1,
-                                        },
+                                pizzaName={
+                                    selectedPizza.name
+                                }
+                                initialHasImage={
+                                    imageVersions[
+                                        selectedPizza.id
+                                    ] === undefined
+                                        ? Boolean(
+                                              selectedPizza.imageUpdatedAt,
+                                          )
+                                        : imageVersions[
+                                              selectedPizza.id
+                                          ] !== null
+                                }
+                                onImageChange={(
+                                    version,
+                                ) =>
+                                    setImageVersions(
+                                        (
+                                            currentVersions,
+                                        ) => ({
+                                            ...currentVersions,
+                                            [selectedPizza.id]:
+                                                version,
+                                        }),
                                     )
                                 }
-                            >
-                                ▲
-                            </button>
+                            />
+                        </section>
+                    </aside>
 
-                            <strong>
-                                {selectedPizza.order}
-                            </strong>
+                    <section className="pizza-recipe-editor">
+                        <header className="pizza-recipe-editor__header">
+                            <div className="pizza-editor-section-heading">
+                                <span
+                                    aria-hidden="true"
+                                >
+                                    ☷
+                                </span>
 
-                            <button
-                                type="button"
-                                title="Descendre cette pizza"
-                                disabled={
-                                    isSaving ||
-                                    selectedPizza.order >=
-                                        totalPizzaCount
-                                }
-                                onClick={() =>
-                                    void onUpdatePizza(
-                                        selectedPizza.id,
-                                        {
-                                            order:
-                                                selectedPizza.order +
-                                                1,
-                                        },
-                                    )
-                                }
-                            >
-                                ▼
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                                <div>
+                                    <strong>
+                                        Ordre de montage
+                                    </strong>
+                                    <small>
+                                        Faire glisser pour
+                                        réorganiser la recette
+                                    </small>
+                                </div>
+                            </div>
 
-                <section className="pizza-recipe-editor">
-                    <header className="pizza-recipe-editor__header">
-                        <div>
-                            <span>
-                                Ordre de montage
-                            </span>
-
-                            <strong>
-                                {
-                                    selectedPizza
+                            <div className="pizza-recipe-editor__summary">
+                                <strong>
+                                    {
+                                        selectedPizza
+                                            .ingredientIds
+                                            .length
+                                    }
+                                </strong>
+                                <span>
+                                    ingrédient
+                                    {selectedPizza
                                         .ingredientIds
-                                        .length
-                                }{" "}
-                                ingrédient
-                                {selectedPizza
-                                    .ingredientIds
-                                    .length > 1
-                                    ? "s"
-                                    : ""}
-                            </strong>
-                        </div>
+                                        .length > 1
+                                        ? "s"
+                                        : ""}
+                                </span>
+                            </div>
 
-                        {!selectedPizza.configured && (
-                            <small>
-                                Recette à configurer
-                            </small>
-                        )}
-                    </header>
+                            {!selectedPizza.configured && (
+                                <small className="pizza-recipe-editor__warning">
+                                    Recette à configurer
+                                </small>
+                            )}
+                        </header>
 
                     <div
                         className={[
@@ -840,7 +980,8 @@ export default function PizzaCatalogWorkspace({
                             Ajouter
                         </button>
                     </div>
-                </section>
+                    </section>
+                </div>
             </article>
         </section>
     );

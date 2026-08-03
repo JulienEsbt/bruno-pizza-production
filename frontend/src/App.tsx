@@ -4,30 +4,35 @@ import {
     Routes,
 } from "react-router-dom";
 
+import AppKeyboardShortcuts from "./components/keyboard/AppKeyboardShortcuts";
 import DashboardPage from "./pages/DashboardPage";
 import ProductionPage from "./pages/ProductionPage";
 import SettingsPage from "./pages/SettingsPage";
 
 function App() {
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route
-                    path="/"
-                    element={<DashboardPage />}
-                />
+        <>
+            <AppKeyboardShortcuts />
 
-                <Route
-                    path="/production"
-                    element={<ProductionPage />}
-                />
+            <BrowserRouter>
+                <Routes>
+                    <Route
+                        path="/"
+                        element={<DashboardPage />}
+                    />
 
-                <Route
-                    path="/parametres"
-                    element={<SettingsPage />}
-                />
-            </Routes>
-        </BrowserRouter>
+                    <Route
+                        path="/production"
+                        element={<ProductionPage />}
+                    />
+
+                    <Route
+                        path="/parametres"
+                        element={<SettingsPage />}
+                    />
+                </Routes>
+            </BrowserRouter>
+        </>
     );
 }
 

@@ -1,0 +1,74 @@
+.pizza-image-editor {
+    display: grid;
+    gap: 5px;
+}
+
+.pizza-image-editor__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.pizza-image-editor__preview {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 46px;
+    overflow: hidden;
+    color: var(--text-muted);
+    background: var(--surface-subtle);
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+}
+
+.pizza-image-editor__preview img {
+    width: 100%;
+    height: 46px;
+    object-fit: cover;
+}
+
+.pizza-image-editor__preview--filled {
+    border-style: solid;
+}
+
+.pizza-image-editor__loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: rgba(8, 18, 34, 0.6);
+    font-size: 0.72rem;
+    font-weight: 850;
+}
+
+.pizza-image-editor__actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 5px;
+}
+
+.pizza-image-editor__actions button {
+    min-height: 28px;
+    padding: 4px 7px;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-size: 0.66rem;
+    font-weight: 800;
+}
+
+.pizza-image-editor__actions .pizza-image-editor__delete {
+    color: var(--danger);
+    background: var(--danger-soft);
+}
+
+.pizza-image-editor__error {
+    color: var(--danger);
+    font-size: 0.65rem;
+    line-height: 1.3;
+}

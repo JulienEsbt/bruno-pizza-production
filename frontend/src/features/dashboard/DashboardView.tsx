@@ -1,56 +1,62 @@
 import {
+    useCallback,
     useEffect,
     useMemo,
-    useState,
 } from "react";
 import {
     useNavigate,
 } from "react-router-dom";
 
+import AppBottomBar, {
+    AppBottomBarAction,
+} from "../../components/layout/AppBottomBar";
+import KeyboardShortcutLegend, {
+    type KeyboardShortcutItem,
+} from "../../components/keyboard/KeyboardShortcutLegend";
 import { useProduction } from "../../hooks/useProduction";
 import { useSettings } from "../../hooks/useSettings";
-import { getTodayProductionFromApi } from "../../services/production/apiProductionService";
-import { sortProductionPizzasByCatalog } from "../../utils/productionOrdering";
+import { canUseAppShortcut } from "../../shared/keyboard/keyboardShortcuts";
+import {
+    getPizzaFamily,
+} from "../../utils/productionFormatting";
+import { sortProductionPizzasByCatalog } from "../production/domain/productionCatalog";
 import DashboardHeader from "./components/DashboardHeader";
 import ExcelImportButton from "./components/ExcelImportButton";
 import ProductionMatrix from "./components/ProductionMatrix";
+import { useExcelProductionImport } from "./hooks/useExcelProductionImport";
 
 import "../../styles/buttons.css";
 import "./DashboardView.css";
 
 const CATALOG_ROUTE = "/parametres";
-
-const isTypingTarget = (
-    target: EventTarget | null,
-): boolean => {
-    if (!(target instanceof HTMLElement)) {
-        return false;
-    }
-
-    return (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.tagName === "SELECT" ||
-        target.isContentEditable
-    );
-};
+const DASHBOARD_SHORTCUTS = [
+    {
+        key: "I",
+        label: "Importer",
+    },
+    {
+        key: "Suppr",
+        label: "Vider",
+    },
+    {
+        key: "T",
+        label: "Thème",
+    },
+] satisfies KeyboardShortcutItem[];
 
 export default function DashboardView() {
     const navigate = useNavigate();
-    const { settings } = useSettings();
+    const excelImporter =
+        useExcelProductionImport();
+    const {
+        settings,
+        error: settingsError,
+    } = useSettings();
 
     const {
         production,
-        setProduction,
         resetProduction,
     } = useProduction();
-
-    const [isLoadingApi, setIsLoadingApi] =
-        useState(false);
-
-    const [apiError, setApiError] = useState<
-        string | null
-    >(null);
 
     const orderedPizzas = useMemo(
         () =>
@@ -64,42 +70,40 @@ export default function DashboardView() {
         ],
     );
 
-    const totalQuantity = orderedPizzas.reduce(
-        (total, pizza) => total + pizza.quantity,
-        0,
+    const productionTotals = useMemo(
+        () =>
+            orderedPizzas.reduce(
+                (totals, pizza) => {
+                    totals.total += pizza.quantity;
+
+                    const family =
+                        getPizzaFamily(pizza);
+
+                    if (family === "tomato") {
+                        totals.tomato += pizza.quantity;
+                    } else if (family === "cream") {
+                        totals.cream += pizza.quantity;
+                    }
+
+                    return totals;
+                },
+                {
+                    tomato: 0,
+                    cream: 0,
+                    total: 0,
+                },
+            ),
+        [orderedPizzas],
     );
 
     const hasProduction =
         orderedPizzas.length > 0;
 
-    const sourceLabel =
-        production.source === "excel"
-            ? "Fichier Excel"
-            : production.source === "api"
-                ? "Gestion de Parc"
-                : "Aucune source";
+    const sourceLabel = hasProduction
+        ? "Fichier Excel"
+        : "Aucune source";
 
-    const handleLoadApiProduction = async () => {
-        try {
-            setIsLoadingApi(true);
-            setApiError(null);
-
-            const apiProduction =
-                await getTodayProductionFromApi();
-
-            setProduction(apiProduction);
-        } catch (error) {
-            setApiError(
-                error instanceof Error
-                    ? error.message
-                    : "Impossible de récupérer la production.",
-            );
-        } finally {
-            setIsLoadingApi(false);
-        }
-    };
-
-    const handleResetProduction = () => {
+    const handleResetProduction = useCallback(() => {
         if (
             !window.confirm(
                 "Vider la production actuellement chargée ?",
@@ -108,20 +112,14 @@ export default function DashboardView() {
             return;
         }
 
-        setApiError(null);
         resetProduction();
-    };
+    }, [resetProduction]);
 
     useEffect(() => {
         const handleKeyDown = (
             event: KeyboardEvent,
         ) => {
-            if (
-                isTypingTarget(event.target) ||
-                event.ctrlKey ||
-                event.metaKey ||
-                event.altKey
-            ) {
+            if (!canUseAppShortcut(event)) {
                 return;
             }
 
@@ -145,12 +143,6 @@ export default function DashboardView() {
                 return;
             }
 
-            if (key === "r") {
-                event.preventDefault();
-                void handleLoadApiProduction();
-                return;
-            }
-
             if (
                 event.key === "Delete" &&
                 hasProduction
@@ -171,7 +163,11 @@ export default function DashboardView() {
                 handleKeyDown,
             );
         };
-    });
+    }, [
+        handleResetProduction,
+        hasProduction,
+        navigate,
+    ]);
 
     return (
         <main className="dashboard">
@@ -183,7 +179,7 @@ export default function DashboardView() {
                             "aucune date chargée"
                         }
                         updatedAt={
-                            production.updatedAt ||
+                            production.sourceUpdatedAt ||
                             "Aucune heure chargée"
                         }
                     />
@@ -191,10 +187,10 @@ export default function DashboardView() {
                     <div className="dashboard-status">
                         <article className="dashboard-status__source">
                             <span
-                                className="dashboard-status__icon"
+                                className="dashboard-status__visual dashboard-status__visual--source"
                                 aria-hidden="true"
                             >
-                                ◷
+                                📄
                             </span>
 
                             <div>
@@ -203,20 +199,51 @@ export default function DashboardView() {
                             </div>
                         </article>
 
-                        <article className="dashboard-status__recipes">
-                            <small>Recettes</small>
+                        <article className="dashboard-status__family dashboard-status__family--tomato">
+                            <span
+                                className="dashboard-status__visual dashboard-status__visual--tomato"
+                                aria-hidden="true"
+                            >
+                                🍅
+                            </span>
 
-                            <strong>
-                                {orderedPizzas.length}
-                            </strong>
+                            <div>
+                                <small>Base tomate</small>
+                                <strong>
+                                    {productionTotals.tomato}
+                                </strong>
+                            </div>
+                        </article>
+
+                        <article className="dashboard-status__family dashboard-status__family--cream">
+                            <span
+                                className="dashboard-status__visual dashboard-status__visual--cream"
+                                aria-hidden="true"
+                            >
+                                🥛
+                            </span>
+
+                            <div>
+                                <small>Base crème</small>
+                                <strong>
+                                    {productionTotals.cream}
+                                </strong>
+                            </div>
                         </article>
 
                         <article className="dashboard-status__production">
-                            <small>À produire</small>
+                            <span
+                                className="dashboard-status__visual dashboard-status__visual--production"
+                                aria-hidden="true"
+                            >
+                                🍕
+                            </span>
 
                             <div>
+                                <small>À produire</small>
+
                                 <strong>
-                                    {totalQuantity}
+                                    {productionTotals.total}
                                 </strong>
 
                                 <span>pizzas</span>
@@ -224,132 +251,88 @@ export default function DashboardView() {
                         </article>
                     </div>
 
-                    {apiError && (
+                    {settingsError && (
                         <div
                             className="dashboard__api-error"
                             role="alert"
                         >
                             <strong>
-                                Actualisation impossible
+                                Catalogue indisponible
                             </strong>
 
-                            <span>{apiError}</span>
+                            <span>
+                                {settingsError}
+                            </span>
                         </div>
                     )}
+
                 </section>
 
                 <section className="dashboard__matrix-area">
                     <ProductionMatrix
                         pizzas={orderedPizzas}
+                        isImportDisabled={
+                            excelImporter.isDisabled
+                        }
+                        isImporting={
+                            excelImporter.isImporting
+                        }
+                        onRequestImport={
+                            excelImporter.openFilePicker
+                        }
+                        onImportFile={
+                            excelImporter.importFile
+                        }
                     />
                 </section>
 
-                <footer className="dashboard-action-bar">
-                    <div className="dashboard-action-bar__buttons">
-                        <button
-                            className="dashboard-action dashboard-action--danger"
-                            type="button"
-                            onClick={
-                                handleResetProduction
-                            }
-                            disabled={
-                                !hasProduction ||
-                                isLoadingApi
-                            }
-                        >
-                            <span className="dashboard-action__icon">
-                                ×
-                            </span>
+                <AppBottomBar ariaLabel="Commandes du tableau de production">
+                    <AppBottomBarAction
+                        icon="×"
+                        label="Vider la production"
+                        shortcut="Suppr"
+                        hint="Effacer"
+                        tone="danger"
+                        aria-keyshortcuts="Delete"
+                        onClick={handleResetProduction}
+                        disabled={!hasProduction}
+                    />
 
-                            <span>
-                                <strong>
-                                    Vider la production
-                                </strong>
+                    <ExcelImportButton
+                        importer={excelImporter}
+                    />
 
-                                <small>
-                                    <kbd>Suppr</kbd> Effacer
-                                </small>
-                            </span>
-                        </button>
+                    <KeyboardShortcutLegend
+                        items={
+                            DASHBOARD_SHORTCUTS
+                        }
+                    />
 
-                        <ExcelImportButton />
+                    <AppBottomBarAction
+                        icon="⚙"
+                        label="Paramètres"
+                        shortcut="P"
+                        hint="Catalogue"
+                        aria-keyshortcuts="P"
+                        onClick={() =>
+                            navigate(CATALOG_ROUTE)
+                        }
+                    />
 
-                        <button
-                            className="dashboard-action dashboard-action--refresh"
-                            type="button"
-                            onClick={() =>
-                                void handleLoadApiProduction()
-                            }
-                            disabled={isLoadingApi}
-                        >
-                            <span className="dashboard-action__icon">
-                                ↻
-                            </span>
-
-                            <span>
-                                <strong>
-                                    {isLoadingApi
-                                        ? "Actualisation…"
-                                        : "Gestion de Parc"}
-                                </strong>
-
-                                <small>
-                                    <kbd>R</kbd> Actualiser
-                                </small>
-                            </span>
-                        </button>
-
-                        <button
-                            className="dashboard-action dashboard-action--catalog"
-                            type="button"
-                            onClick={() =>
-                                navigate(CATALOG_ROUTE)
-                            }
-                        >
-                            <span className="dashboard-action__icon">
-                                ⚙
-                            </span>
-
-                            <span>
-                                <strong>
-                                    Pizzas et ingrédients
-                                </strong>
-
-                                <small>
-                                    <kbd>P</kbd> Modifier
-                                </small>
-                            </span>
-                        </button>
-
-                        <button
-                            className="dashboard-action dashboard-action--start"
-                            type="button"
-                            onClick={() =>
-                                navigate("/production")
-                            }
-                            disabled={
-                                !hasProduction ||
-                                isLoadingApi
-                            }
-                        >
-                            <span className="dashboard-action__icon">
-                                ▶
-                            </span>
-
-                            <span>
-                                <strong>
-                                    Commencer
-                                </strong>
-
-                                <small>
-                                    <kbd>Entrée</kbd> Mode production
-                                </small>
-                            </span>
-
-                            <b aria-hidden="true">→</b>
-                        </button>
-                    </div>
-                </footer>
+                    <AppBottomBarAction
+                        icon="▶"
+                        label="Production"
+                        shortcut="Entrée"
+                        hint="Commencer"
+                        tone="primary"
+                        trailing="→"
+                        aria-keyshortcuts="Enter"
+                        onClick={() =>
+                            navigate("/production")
+                        }
+                        disabled={!hasProduction}
+                    />
+                </AppBottomBar>
             </div>
         </main>
     );

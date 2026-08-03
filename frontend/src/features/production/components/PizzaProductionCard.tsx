@@ -1,13 +1,17 @@
+import { useState } from "react";
+
 import type { PizzaProduction } from "../../../types/production";
 
 import {
     getPizzaImageUrl,
-} from "../../../services/settings/pizzaImageApi";
+} from "../../settings/services/pizzaImageApi";
 
 import {
     normalizeIngredientName,
     normalizePizzaName,
 } from "../../../utils/productionFormatting";
+
+import "./PizzaProductionCard.css";
 
 interface PizzaProductionCardProps {
     pizza: PizzaProduction;
@@ -16,6 +20,62 @@ interface PizzaProductionCardProps {
     currentIndex: number;
     totalPizzas: number;
     catalogPizzaId?: string;
+}
+
+interface PizzaVisualProps {
+    catalogPizzaId?: string;
+    pizzaName: string;
+}
+
+function PizzaVisual({
+    catalogPizzaId,
+    pizzaName,
+}: PizzaVisualProps) {
+    const [hasImageError, setHasImageError] =
+        useState(!catalogPizzaId);
+
+    return (
+        <section className="production-visual">
+            <header className="production-panel-heading">
+                <div>
+                    <span>Contrôle visuel</span>
+                    <h2>Visuel de la pizza</h2>
+                </div>
+
+                <strong aria-hidden="true">◉</strong>
+            </header>
+
+            <div className="production-visual__content">
+                {catalogPizzaId && !hasImageError && (
+                    <img
+                        className="production-visual__image"
+                        src={getPizzaImageUrl(
+                            catalogPizzaId,
+                        )}
+                        alt={`Photo de ${normalizePizzaName(
+                            pizzaName,
+                        )}`}
+                        onError={() =>
+                            setHasImageError(true)
+                        }
+                    />
+                )}
+
+                {hasImageError && (
+                    <div className="production-visual__fallback">
+                        <div className="production-visual__placeholder">
+                            <span aria-hidden="true">◎</span>
+                        </div>
+                        <strong>Photo à configurer</strong>
+                        <small>
+                            Aucune photo n’est configurée
+                            pour cette pizza.
+                        </small>
+                    </div>
+                )}
+            </div>
+        </section>
+    );
 }
 
 export default function PizzaProductionCard({
@@ -29,17 +89,23 @@ export default function PizzaProductionCard({
     return (
         <article className="production-workspace">
             <aside className="production-sequence">
-                <header className="production-sequence__header">
-                    <span>Ordre de production</span>
+                <header className="production-panel-heading">
+                    <div>
+                        <span>Ordre de production</span>
+                        <h2>Pizza en cours</h2>
+                    </div>
 
-                    <strong>
+                    <strong className="production-panel-step">
                         {currentIndex + 1}
-                        <small> / {totalPizzas}</small>
+                        <small>/{totalPizzas}</small>
                     </strong>
                 </header>
 
                 <div className="production-sequence__preview production-sequence__preview--previous">
-                    <small>Précédente</small>
+                    <small>
+                        <span aria-hidden="true">←</span>
+                        Précédente
+                    </small>
 
                     {previousPizza ? (
                         <>
@@ -59,7 +125,10 @@ export default function PizzaProductionCard({
                 </div>
 
                 <div className="production-sequence__current">
-                    <span>Pizza affichée</span>
+                    <span className="production-sequence__live">
+                        <i aria-hidden="true" />
+                        En cours
+                    </span>
 
                     <h1>
                         {normalizePizzaName(pizza.name)}
@@ -69,15 +138,17 @@ export default function PizzaProductionCard({
                         <strong>{pizza.quantity}</strong>
 
                         <small>
-                            pizza
-                            {pizza.quantity > 1 ? "s" : ""}
-                            {" "}à produire
+                            pizza{pizza.quantity > 1 ? "s" : ""}
+                            <span>à produire</span>
                         </small>
                     </div>
                 </div>
 
                 <div className="production-sequence__preview production-sequence__preview--next">
-                    <small>Suivante</small>
+                    <small>
+                        Suivante
+                        <span aria-hidden="true">→</span>
+                    </small>
 
                     {nextPizza ? (
                         <>
@@ -98,15 +169,16 @@ export default function PizzaProductionCard({
             </aside>
 
             <section className="production-recipe">
-                <header className="production-recipe__heading">
+                <header className="production-panel-heading">
                     <div>
                         <span>Recette de la pizza</span>
 
                         <h2>Ingrédients</h2>
                     </div>
 
-                    <strong>
+                    <strong className="production-recipe__count">
                         {pizza.ingredients.length}
+                        <small>étapes</small>
                     </strong>
                 </header>
 
@@ -136,53 +208,11 @@ export default function PizzaProductionCard({
                 )}
             </section>
 
-            <section className="production-visual">
-                <div className="production-visual__content">
-                    {catalogPizzaId ? (
-                        <img
-                            className="production-visual__image"
-                            src={getPizzaImageUrl(
-                                catalogPizzaId,
-                            )}
-                            alt={`Photo de ${normalizePizzaName(
-                                pizza.name,
-                            )}`}
-                            onError={(event) => {
-                                event.currentTarget.style.display =
-                                    "none";
-
-                                event.currentTarget
-                                    .nextElementSibling
-                                    ?.removeAttribute(
-                                        "hidden",
-                                    );
-                            }}
-                        />
-                    ) : null}
-
-                    <div
-                        className="production-visual__fallback"
-                        hidden={Boolean(
-                            catalogPizzaId,
-                        )}
-                    >
-                        <div className="production-visual__placeholder">
-                            <span aria-hidden="true">
-                                ◎
-                            </span>
-                        </div>
-
-                        <strong>
-                            Visuel de la pizza
-                        </strong>
-
-                        <small>
-                            Aucune photo n’est configurée
-                            pour cette pizza.
-                        </small>
-                    </div>
-                </div>
-            </section>
+            <PizzaVisual
+                key={catalogPizzaId ?? pizza.id}
+                catalogPizzaId={catalogPizzaId}
+                pizzaName={pizza.name}
+            />
         </article>
     );
 }
