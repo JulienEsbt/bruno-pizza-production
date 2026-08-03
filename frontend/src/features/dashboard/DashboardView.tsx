@@ -174,13 +174,9 @@ export default function DashboardView() {
             <div className="dashboard__screen">
                 <section className="dashboard__header-area">
                     <DashboardHeader
-                        date={
-                            production.date ||
-                            "aucune date chargée"
-                        }
+                        date={production.date}
                         updatedAt={
-                            production.sourceUpdatedAt ||
-                            "Aucune heure chargée"
+                            production.sourceUpdatedAt
                         }
                     />
 

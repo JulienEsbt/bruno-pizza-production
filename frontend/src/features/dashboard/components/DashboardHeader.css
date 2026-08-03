@@ -61,10 +61,21 @@
 }
 
 .dashboard-header__update strong {
+    overflow: hidden;
     color: var(--app-text);
     font-size: 0.95rem;
     font-weight: 900;
     line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-header__update--empty strong {
+    color: color-mix(
+        in srgb,
+        var(--app-text),
+        var(--text-muted) 24%
+    );
 }
 
 .dashboard-header__update small {

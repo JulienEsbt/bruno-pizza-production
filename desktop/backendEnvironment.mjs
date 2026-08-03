@@ -30,8 +30,10 @@ export const resolveDesktopPaths = ({
 
 export const configureDesktopBackendEnvironment = (
     desktopPaths,
+    frontendUrl,
 ) => {
     process.env.HOST = "127.0.0.1";
+    process.env.FRONTEND_URL = frontendUrl;
     process.env.DATABASE_PATH =
         desktopPaths.databasePath;
     process.env.PIZZA_IMAGES_DIRECTORY =

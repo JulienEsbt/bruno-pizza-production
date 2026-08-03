@@ -14,6 +14,7 @@ import {
 } from "./backendEnvironment.mjs";
 import {
     DESKTOP_ENTRY_URL,
+    DESKTOP_ORIGIN,
     DESKTOP_SCHEME,
     getBackendProxyUrl,
     isDesktopNavigation,
@@ -49,6 +50,7 @@ const configureBackend = () => {
 
     configureDesktopBackendEnvironment(
         desktopPaths,
+        DESKTOP_ORIGIN,
     );
 };
 

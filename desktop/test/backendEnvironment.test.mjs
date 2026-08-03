@@ -30,6 +30,7 @@ test("place SQLite et les photos dans le dossier utilisateur Windows", () => {
 test("configure explicitement le backend desktop", () => {
     const previousEnvironment = {
         HOST: process.env.HOST,
+        FRONTEND_URL: process.env.FRONTEND_URL,
         DATABASE_PATH: process.env.DATABASE_PATH,
         PIZZA_IMAGES_DIRECTORY:
             process.env.PIZZA_IMAGES_DIRECTORY,
@@ -45,9 +46,14 @@ test("configure explicitement le backend desktop", () => {
     try {
         configureDesktopBackendEnvironment(
             desktopPaths,
+            "bruno-pizza://app",
         );
 
         assert.equal(process.env.HOST, "127.0.0.1");
+        assert.equal(
+            process.env.FRONTEND_URL,
+            "bruno-pizza://app",
+        );
         assert.equal(
             process.env.DATABASE_PATH,
             desktopPaths.databasePath,

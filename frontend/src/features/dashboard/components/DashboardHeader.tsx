@@ -30,6 +30,8 @@ export default function DashboardHeader({
     date,
     updatedAt,
 }: DashboardHeaderProps) {
+    const hasProductionData = Boolean(date);
+
     return (
         <AppTopBar
             left={
@@ -44,7 +46,13 @@ export default function DashboardHeader({
                 </div>
             }
             center={
-                <div className="dashboard-header__update">
+                <div
+                    className={`dashboard-header__update${
+                        hasProductionData
+                            ? ""
+                            : " dashboard-header__update--empty"
+                    }`}
+                >
                     <span
                         className="dashboard-header__update-icon"
                         aria-hidden="true"
@@ -58,12 +66,15 @@ export default function DashboardHeader({
                         </span>
 
                         <strong>
-                            {date} à{" "}
-                            {formatUpdatedAt(updatedAt)}
+                            {hasProductionData
+                                ? `${date} à ${formatUpdatedAt(updatedAt)}`
+                                : "En attente d’import"}
                         </strong>
 
                         <small>
-                            Horodatage du fichier Excel
+                            {hasProductionData
+                                ? "Horodatage du fichier Excel"
+                                : "Aucun fichier Excel chargé"}
                         </small>
                     </div>
                 </div>
