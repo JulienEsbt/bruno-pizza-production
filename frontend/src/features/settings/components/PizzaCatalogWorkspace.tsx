@@ -5,6 +5,7 @@ import {
 
 import type {
     Dispatch,
+    KeyboardEvent,
     SetStateAction,
 } from "react";
 
@@ -28,6 +29,9 @@ const BASE_LABELS: Record<PizzaBase, string> = {
     cream: "Base crème",
     other: "Autre",
 };
+
+const PIZZA_DRAG_DATA_TYPE =
+    "application/x-bruno-pizza";
 
 interface PizzaCatalogWorkspaceProps {
     pizzas: PizzaCatalogItem[];
@@ -102,6 +106,11 @@ export default function PizzaCatalogWorkspace({
         setDraggedIngredientId,
     ] = useState<string | null>(null);
 
+    const [draggedPizzaId, setDraggedPizzaId] =
+        useState<string | null>(null);
+    const [dragTargetPizzaId, setDragTargetPizzaId] =
+        useState<string | null>(null);
+
     const [
         dragTargetIngredientId,
         setDragTargetIngredientId,
@@ -146,6 +155,76 @@ export default function PizzaCatalogWorkspace({
     const resetIngredientDrag = (): void => {
         setDraggedIngredientId(null);
         setDragTargetIngredientId(null);
+    };
+
+    const resetPizzaDrag = (): void => {
+        setDraggedPizzaId(null);
+        setDragTargetPizzaId(null);
+    };
+
+    const movePizza = async (
+        pizzaId: string,
+        targetPizzaId: string,
+    ): Promise<void> => {
+        if (
+            pizzaId === targetPizzaId ||
+            isSaving
+        ) {
+            resetPizzaDrag();
+            return;
+        }
+
+        const targetPizza = pizzas.find(
+            (pizza) => pizza.id === targetPizzaId,
+        );
+
+        if (!targetPizza) {
+            resetPizzaDrag();
+            return;
+        }
+
+        resetPizzaDrag();
+
+        try {
+            await onUpdatePizza(pizzaId, {
+                order: targetPizza.order,
+            });
+        } catch {
+            // L’erreur est déjà affichée par le contexte.
+        }
+    };
+
+    const handlePizzaOrderKeyDown = (
+        event: KeyboardEvent<HTMLButtonElement>,
+        pizza: PizzaCatalogItem,
+    ): void => {
+        if (
+            event.key !== "ArrowUp" &&
+            event.key !== "ArrowDown"
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const currentIndex = pizzas.findIndex(
+            (currentPizza) =>
+                currentPizza.id === pizza.id,
+        );
+        const targetPizza =
+            pizzas[
+                currentIndex +
+                    (event.key === "ArrowUp"
+                        ? -1
+                        : 1)
+            ];
+
+        if (targetPizza) {
+            void movePizza(
+                pizza.id,
+                targetPizza.id,
+            );
+        }
     };
 
     const handleIngredientDrop = async (
@@ -316,11 +395,20 @@ export default function PizzaCatalogWorkspace({
                                     !pizza.active
                                         ? "pizza-catalog-item--inactive"
                                         : "",
+                                    draggedPizzaId === pizza.id
+                                        ? "pizza-catalog-item--dragging"
+                                        : "",
+                                    dragTargetPizzaId === pizza.id &&
+                                    draggedPizzaId !== pizza.id
+                                        ? "pizza-catalog-item--drag-target"
+                                        : "",
                                 ]
                                     .filter(Boolean)
                                     .join(" ")}
                                 type="button"
                                 key={pizza.id}
+                                draggable={!isSaving}
+                                disabled={isSaving}
                                 aria-current={
                                     isSelected
                                         ? "true"
@@ -331,6 +419,57 @@ export default function PizzaCatalogWorkspace({
                                         pizza.id,
                                     )
                                 }
+                                onDragStart={(event) => {
+                                    setDraggedPizzaId(
+                                        pizza.id,
+                                    );
+                                    event.dataTransfer.effectAllowed =
+                                        "move";
+                                    event.dataTransfer.setData(
+                                        PIZZA_DRAG_DATA_TYPE,
+                                        pizza.id,
+                                    );
+                                }}
+                                onDragEnter={(event) => {
+                                    event.preventDefault();
+
+                                    if (
+                                        draggedPizzaId &&
+                                        draggedPizzaId !== pizza.id
+                                    ) {
+                                        setDragTargetPizzaId(
+                                            pizza.id,
+                                        );
+                                    }
+                                }}
+                                onDragOver={(event) => {
+                                    event.preventDefault();
+                                    event.dataTransfer.dropEffect =
+                                        "move";
+                                }}
+                                onDrop={(event) => {
+                                    event.preventDefault();
+
+                                    const droppedPizzaId =
+                                        event.dataTransfer.getData(
+                                            PIZZA_DRAG_DATA_TYPE,
+                                        ) || draggedPizzaId;
+
+                                    if (droppedPizzaId) {
+                                        void movePizza(
+                                            droppedPizzaId,
+                                            pizza.id,
+                                        );
+                                    }
+                                }}
+                                onDragEnd={resetPizzaDrag}
+                                onKeyDown={(event) =>
+                                    handlePizzaOrderKeyDown(
+                                        event,
+                                        pizza,
+                                    )
+                                }
+                                title="Faire glisser pour réorganiser"
                             >
                                 <span
                                     className={
@@ -392,6 +531,9 @@ export default function PizzaCatalogWorkspace({
                                 </span>
 
                                 <span className="pizza-catalog-item__order">
+                                    <span aria-hidden="true">
+                                        ⠿
+                                    </span>
                                     {pizza.order}
                                 </span>
                             </button>
@@ -489,63 +631,9 @@ export default function PizzaCatalogWorkspace({
                                     </div>
                                 </div>
 
-                                <div className="pizza-editor-global-order">
-                                    <span>
-                                        Position
-                                    </span>
-
-                                    <div>
-                                        <button
-                                            type="button"
-                                            title="Monter cette pizza"
-                                            disabled={
-                                                isSaving ||
-                                                selectedPizza.order <=
-                                                    1
-                                            }
-                                            onClick={() =>
-                                                void onUpdatePizza(
-                                                    selectedPizza.id,
-                                                    {
-                                                        order:
-                                                            selectedPizza.order -
-                                                            1,
-                                                    },
-                                                )
-                                            }
-                                        >
-                                            ▲
-                                        </button>
-
-                                        <strong>
-                                            {
-                                                selectedPizza.order
-                                            }
-                                        </strong>
-
-                                        <button
-                                            type="button"
-                                            title="Descendre cette pizza"
-                                            disabled={
-                                                isSaving ||
-                                                selectedPizza.order >=
-                                                    totalPizzaCount
-                                            }
-                                            onClick={() =>
-                                                void onUpdatePizza(
-                                                    selectedPizza.id,
-                                                    {
-                                                        order:
-                                                            selectedPizza.order +
-                                                            1,
-                                                    },
-                                                )
-                                            }
-                                        >
-                                            ▼
-                                        </button>
-                                    </div>
-                                </div>
+                                <span className="pizza-editor-order-hint">
+                                    ⠿ Glisser dans le catalogue
+                                </span>
                             </header>
 
                             <div className="pizza-editor-fields">

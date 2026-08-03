@@ -1,4 +1,4 @@
-# Guide utilisateur — Bruno Pizza 1.1.0
+# Guide utilisateur — Bruno Pizza 1.1.1
 
 Ce guide s’adresse aux personnes qui préparent les productions et fabriquent
 les pizzas. L’application comporte trois écrans : le tableau de production, le
@@ -59,7 +59,9 @@ Ouvrez **Paramètres**. Le catalogue comporte trois onglets.
 ### Pizzas
 
 - Sélectionnez une pizza à gauche.
-- Modifiez son nom, sa base, son état actif et sa position.
+- Modifiez son nom, sa base et son état actif.
+- Réorganisez les pizzas directement dans la liste par glisser-déposer. Les
+  flèches haut et bas restent disponibles au clavier.
 - Ajoutez une photo si elle doit apparaître pendant la fabrication.
 - Réorganisez les ingrédients par glisser-déposer.
 - Ajoutez ou retirez un ingrédient dans la recette.

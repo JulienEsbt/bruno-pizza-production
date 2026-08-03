@@ -160,6 +160,16 @@
     opacity: 0.58;
 }
 
+.pizza-catalog-item--dragging {
+    opacity: 0.42;
+    transform: scale(0.985);
+}
+
+.pizza-catalog-item--drag-target {
+    border-color: var(--primary);
+    box-shadow: inset 0 3px 0 var(--primary);
+}
+
 .pizza-catalog-item__status {
     width: 8px;
     height: 8px;
@@ -221,8 +231,10 @@
 }
 
 .pizza-catalog-item__order {
-    display: grid;
+    display: flex;
     place-items: center;
+    align-items: center;
+    gap: 4px;
     min-width: 29px;
     height: 29px;
     color: var(--text-muted);
@@ -230,6 +242,11 @@
     border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 900;
+}
+
+.pizza-catalog-item__order span {
+    color: var(--primary);
+    font-size: 0.8rem;
 }
 
 .pizza-workspace__editor {
@@ -627,39 +644,11 @@
     grid-column: auto;
 }
 
-.pizza-editor-global-order > div {
-    display: grid;
-    grid-template-columns: 28px 34px 28px;
-    align-items: center;
-    min-height: 36px;
-    overflow: hidden;
-    background:
-        color-mix(
-            in srgb,
-            var(--primary-soft),
-            var(--surface-subtle) 66%
-        );
-    border: 1px solid var(--border);
-    border-radius: 10px;
-}
-
-.pizza-editor-global-order {
-    display: grid;
+.pizza-editor-order-hint {
     flex: 0 0 auto;
-    justify-items: end;
-    gap: 4px;
-}
-
-.pizza-editor-global-order button {
-    height: 100%;
     color: var(--primary);
-    background: transparent;
-    border: 0;
-}
-
-.pizza-editor-global-order strong {
-    font-size: 0.96rem;
-    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 800;
 }
 
 .pizza-editor-body

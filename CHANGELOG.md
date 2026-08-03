@@ -2,6 +2,15 @@
 
 Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
+## 1.1.1 — 3 août 2026
+
+### Correctifs et ergonomie
+
+- correction des enregistrements `POST`, `PATCH`, `PUT` et `DELETE` dans les
+  applications Electron Windows et macOS ;
+- réorganisation des pizzas par glisser-déposer, avec flèches haut et bas au
+  clavier comme pour les distributeurs.
+
 ## 1.1.0 — 3 août 2026
 
 ### Évolutions

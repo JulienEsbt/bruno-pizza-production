@@ -19,6 +19,7 @@ import {
     getBackendProxyUrl,
     isDesktopNavigation,
 } from "./protocolRouting.mjs";
+import { createBackendRequestInit } from "./requestForwarding.mjs";
 import {
     DEFAULT_ZOOM_FACTOR,
     getNextZoomFactor,
@@ -78,7 +79,7 @@ const startBackend = async () => {
 const registerDesktopProtocol = async () => {
     await protocol.handle(
         DESKTOP_SCHEME,
-        (request) => {
+        async (request) => {
             if (!runningServer) {
                 return new Response(
                     "Le serveur local n’est pas disponible.",
@@ -100,18 +101,10 @@ const registerDesktopProtocol = async () => {
                 );
             }
 
-            const method = request.method.toUpperCase();
-            const canHaveBody =
-                method !== "GET" && method !== "HEAD";
-
-            return net.fetch(backendUrl, {
-                method,
-                headers: request.headers,
-                ...(canHaveBody
-                    ? { body: request.body }
-                    : {}),
-                bypassCustomProtocolHandlers: true,
-            });
+            return net.fetch(
+                backendUrl,
+                await createBackendRequestInit(request),
+            );
         },
     );
 };
