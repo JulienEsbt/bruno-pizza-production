@@ -30,11 +30,11 @@
     display: flex;
     justify-content: safe center;
     align-items: stretch;
-    gap: 8px;
-    min-height: 64px;
+    gap: 10px;
+    min-height: 84px;
     margin-inline: 14px;
     overflow-x: auto;
-    padding: 8px;
+    padding: 10px;
     background:
         linear-gradient(
             135deg,
@@ -59,8 +59,8 @@
 
 .production-distributor {
     display: grid;
-    grid-template-columns: minmax(56px, auto) 52px;
-    min-width: 118px;
+    grid-template-columns: minmax(74px, auto) 64px;
+    min-width: 148px;
     overflow: hidden;
     background: var(--surface-subtle);
     border: 1px solid var(--border);
@@ -74,11 +74,11 @@
 .production-distributor strong {
     display: grid;
     place-items: center;
-    padding: 6px 9px;
+    padding: 9px 12px;
 }
 
 .production-distributor span {
-    font-size: 0.76rem;
+    font-size: 0.9rem;
     font-weight: 900;
     letter-spacing: 0.04em;
 }
@@ -87,7 +87,7 @@
     color: var(--app-text);
     background: var(--surface);
     border-bottom: 4px solid;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
 }
 
 .production--empty {

@@ -19,6 +19,11 @@ import {
     getBackendProxyUrl,
     isDesktopNavigation,
 } from "./protocolRouting.mjs";
+import {
+    DEFAULT_ZOOM_FACTOR,
+    getNextZoomFactor,
+    getZoomAction,
+} from "./zoom.mjs";
 
 const APP_USER_MODEL_ID =
     "com.squirrel.BrunoPizza.BrunoPizza";
@@ -147,6 +152,40 @@ const createMainWindow = async () => {
 
     window.webContents.setWindowOpenHandler(
         () => ({ action: "deny" }),
+    );
+    let currentZoomFactor = DEFAULT_ZOOM_FACTOR;
+    const applyZoom = (action) => {
+        currentZoomFactor = getNextZoomFactor(
+            currentZoomFactor,
+            action,
+        );
+        window.webContents.setZoomFactor(
+            currentZoomFactor,
+        );
+    };
+
+    window.webContents.setZoomFactor(
+        currentZoomFactor,
+    );
+    window.webContents.on(
+        "before-input-event",
+        (event, input) => {
+            const action = getZoomAction(input);
+
+            if (!action) {
+                return;
+            }
+
+            event.preventDefault();
+            applyZoom(action);
+        },
+    );
+    window.webContents.on(
+        "zoom-changed",
+        (event, direction) => {
+            event.preventDefault();
+            applyZoom(direction);
+        },
     );
     window.webContents.on(
         "will-navigate",

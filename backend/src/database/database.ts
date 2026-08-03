@@ -240,6 +240,100 @@ const seedDatabaseIfEmpty = (): void => {
     }
 };
 
+const LEGACY_DEFAULT_PIZZA_IDS = [
+    "4-fromages",
+    "basquaise",
+    "bearnaise",
+    "buffalo",
+    "burger",
+    "campagnarde",
+    "cannibale",
+    "capra",
+    "forestiere",
+    "italienne",
+    "merguez-chorizo",
+    "reine",
+    "royale",
+    "boursin",
+    "chevre-miel",
+    "flammekueche",
+    "franc-comtoise",
+    "kebab",
+    "langroise",
+    "montagnarde",
+    "morbiflette",
+    "poulet-curry",
+    "raclette",
+    "tartiflette",
+];
+
+export const migrateLegacyPizzaDefaults = (): void => {
+    const pizzas = database
+        .prepare(`
+            SELECT
+                id,
+                display_order,
+                active
+            FROM pizzas
+            ORDER BY display_order
+        `)
+        .all() as unknown as Array<{
+            id: string;
+            display_order: number;
+            active: number;
+        }>;
+
+    const isUntouchedLegacyCatalog =
+        pizzas.length ===
+            LEGACY_DEFAULT_PIZZA_IDS.length &&
+        pizzas.every(
+            (pizza, index) =>
+                pizza.id ===
+                    LEGACY_DEFAULT_PIZZA_IDS[index] &&
+                pizza.display_order === index + 1 &&
+                pizza.active === 1,
+        );
+
+    if (!isUntouchedLegacyCatalog) {
+        return;
+    }
+
+    const updatePizza = database.prepare(`
+        UPDATE pizzas
+        SET
+            display_order = ?,
+            active = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `);
+
+    database.exec("BEGIN IMMEDIATE");
+
+    try {
+        database.exec(`
+            UPDATE pizzas
+            SET display_order = display_order + 100
+        `);
+
+        for (const pizza of PIZZAS_SEED) {
+            updatePizza.run(
+                pizza.order,
+                pizza.active ? 1 : 0,
+                pizza.id,
+            );
+        }
+
+        database.exec("COMMIT");
+
+        console.log(
+            "Catalogue pizzas par défaut mis à jour.",
+        );
+    } catch (error) {
+        database.exec("ROLLBACK");
+        throw error;
+    }
+};
+
 
 const migrateDistributorExcelNames =
     (): void => {
@@ -376,6 +470,7 @@ export const initializeDatabase = (): void => {
     createSchema();
     migrateDistributorSchema();
     migrateDistributorExcelNames();
+    migrateLegacyPizzaDefaults();
     seedDatabaseIfEmpty();
     seedDistributorsIfEmpty();
 };

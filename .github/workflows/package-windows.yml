@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   package-windows:
-    name: Bruno Pizza 1.0.1 — Windows x64
+    name: Bruno Pizza 1.1.0 — Windows x64
     runs-on: windows-latest
     timeout-minutes: 30
 
@@ -38,19 +38,19 @@ jobs:
       - name: Contrôler le fichier final
         shell: pwsh
         run: |
-          $installer = "out/make/squirrel.windows/x64/Bruno-Pizza-Setup-1.0.1.exe"
+          $installer = "out/make/squirrel.windows/x64/Bruno-Pizza-Setup-1.1.0.exe"
           if (-not (Test-Path $installer -PathType Leaf)) {
             throw "Installateur introuvable : $installer"
           }
           $hash = (Get-FileHash $installer -Algorithm SHA256).Hash
           "### Installateur Windows" >> $env:GITHUB_STEP_SUMMARY
-          "``Bruno-Pizza-Setup-1.0.1.exe``" >> $env:GITHUB_STEP_SUMMARY
+          "``Bruno-Pizza-Setup-1.1.0.exe``" >> $env:GITHUB_STEP_SUMMARY
           "SHA-256 : ``$hash``" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Publier l'installateur unique
         uses: actions/upload-artifact@v7
         with:
-          path: out/make/squirrel.windows/x64/Bruno-Pizza-Setup-1.0.1.exe
+          path: out/make/squirrel.windows/x64/Bruno-Pizza-Setup-1.1.0.exe
           archive: false
           if-no-files-found: error
           retention-days: 14

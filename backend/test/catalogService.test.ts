@@ -39,6 +39,7 @@ const {
 const {
     database,
     initializeDatabase,
+    migrateLegacyPizzaDefaults,
 } = await import(
     "../src/database/database.js"
 );
@@ -59,6 +60,108 @@ test("initialise le catalogue de référence", () => {
     assert.ok(catalog.pizzas.length > 0);
     assert.ok(catalog.ingredients.length > 0);
     assert.ok(catalog.distributors.length > 0);
+
+    assert.deepEqual(
+        catalog.pizzas
+            .filter((pizza) => pizza.active)
+            .map((pizza) => pizza.name),
+        [
+            "REINE",
+            "ROYALE",
+            "BURGER",
+            "CANNIBALE",
+            "4 FROMAGES",
+            "CHÈVRE MIEL",
+            "POULET CURRY",
+            "KEBAB",
+            "LANGROISE",
+            "RACLETTE",
+            "FRANC-COMTOISE",
+        ],
+    );
+});
+
+test("met à niveau uniquement l’ancien catalogue pizza intact", () => {
+    const legacyPizzaIds = [
+        "4-fromages",
+        "basquaise",
+        "bearnaise",
+        "buffalo",
+        "burger",
+        "campagnarde",
+        "cannibale",
+        "capra",
+        "forestiere",
+        "italienne",
+        "merguez-chorizo",
+        "reine",
+        "royale",
+        "boursin",
+        "chevre-miel",
+        "flammekueche",
+        "franc-comtoise",
+        "kebab",
+        "langroise",
+        "montagnarde",
+        "morbiflette",
+        "poulet-curry",
+        "raclette",
+        "tartiflette",
+    ];
+    const restoreLegacyPizza = database.prepare(`
+        UPDATE pizzas
+        SET display_order = ?, active = 1
+        WHERE id = ?
+    `);
+
+    database.exec("BEGIN IMMEDIATE");
+    database.exec(`
+        UPDATE pizzas
+        SET display_order = display_order + 100
+    `);
+
+    for (const [index, pizzaId] of
+        legacyPizzaIds.entries()) {
+        restoreLegacyPizza.run(index + 1, pizzaId);
+    }
+
+    database.exec("COMMIT");
+
+    migrateLegacyPizzaDefaults();
+
+    assert.deepEqual(
+        getCatalog().pizzas
+            .filter((pizza) => pizza.active)
+            .map((pizza) => pizza.name),
+        [
+            "REINE",
+            "ROYALE",
+            "BURGER",
+            "CANNIBALE",
+            "4 FROMAGES",
+            "CHÈVRE MIEL",
+            "POULET CURRY",
+            "KEBAB",
+            "LANGROISE",
+            "RACLETTE",
+            "FRANC-COMTOISE",
+        ],
+    );
+
+    database.prepare(`
+        UPDATE pizzas
+        SET active = 1
+        WHERE id = 'basquaise'
+    `).run();
+
+    migrateLegacyPizzaDefaults();
+
+    assert.equal(
+        getCatalog().pizzas.find(
+            (pizza) => pizza.id === "basquaise",
+        )?.active,
+        true,
+    );
 });
 
 test("crée une pizza puis configure sa recette", () => {

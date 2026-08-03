@@ -1,4 +1,4 @@
-# Guide utilisateur — Bruno Pizza 1.0.0
+# Guide utilisateur — Bruno Pizza 1.1.0
 
 Ce guide s’adresse aux personnes qui préparent les productions et fabriquent
 les pizzas. L’application comporte trois écrans : le tableau de production, le
@@ -96,6 +96,10 @@ retard.
 
 Le raccourci `T` change le thème clair ou sombre sur tous les écrans. Les
 raccourcis sont ignorés pendant la saisie dans un champ.
+
+Dans l’application Windows, `Ctrl` + `+` agrandit l’affichage, `Ctrl` + `-`
+le réduit et `Ctrl` + `0` restaure le niveau conseillé. La molette de la souris
+avec `Ctrl` permet également de zoomer.
 
 ### Tableau de production
 
