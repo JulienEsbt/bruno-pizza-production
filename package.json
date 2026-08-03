@@ -1,18 +1,39 @@
 {
   "name": "bruno-pizza-production",
+  "productName": "Bruno Pizza",
   "version": "1.0.0",
+  "description": "Application desktop locale de pilotage de la production Bruno Pizza.",
+  "author": "Julien Esterbet",
+  "license": "UNLICENSED",
   "private": true,
+  "main": "desktop/main.mjs",
   "scripts": {
     "install:all": "npm --prefix frontend ci && npm --prefix backend ci",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
-    "check": "npm --prefix frontend run check && npm --prefix backend run check",
+    "check:desktop": "node --test desktop/test/*.test.mjs",
+    "check": "npm run check:desktop && npm --prefix frontend run check && npm --prefix backend run check",
     "build": "npm --prefix frontend run build && npm --prefix backend run build",
     "release:check": "npm run check && npm run build",
+    "desktop:start": "npm run build && electron-forge start",
+    "desktop:package": "npm run release:check && electron-forge package",
+    "make:windows": "npm run release:check && electron-forge make --platform=win32 --arch=x64",
     "start": "npm --prefix backend start"
   },
   "engines": {
     "node": ">=22.5.0",
     "npm": ">=10"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "electron-squirrel-startup": "^1.0.1",
+    "express": "^5.2.1",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "electron": "^43.2.0"
   }
 }
