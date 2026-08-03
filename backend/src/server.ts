@@ -1,26 +1,19 @@
-import { createApp } from "./app.js";
 import { config } from "./config.js";
-import { initializeDatabase } from "./database/database.js";
+import { startHttpServer } from "./httpServer.js";
 
-initializeDatabase();
+try {
+    const runningServer = await startHttpServer();
 
-const server = createApp().listen(
-    config.port,
-    config.host,
-    () => {
-        console.log(
-            `Backend démarré sur http://${config.host}:${config.port}`,
-        );
-        console.log(
-            `Base SQLite : ${config.databasePath}`,
-        );
-    },
-);
-
-server.on("error", (error) => {
+    console.log(
+        `Backend démarré sur ${runningServer.origin}`,
+    );
+    console.log(
+        `Base SQLite : ${config.databasePath}`,
+    );
+} catch (error) {
     console.error(
         "Impossible de démarrer le backend :",
         error,
     );
     process.exitCode = 1;
-});
+}
