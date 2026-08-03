@@ -9,7 +9,7 @@ API Express persistée dans SQLite.
 Fichier Excel
     │ lecture locale, jamais d’envoi HTTP
     ▼
-Frontend React ─────────── API HTTP Express ─────────── SQLite
+Fenêtre Electron ─ Frontend React ─ API HTTP Express ─ SQLite
     │                          │                           │
     │ tableau et parcours      │ catalogue et photos      │ données métier
     └── localStorage           └── stockage des images ───┘
@@ -17,9 +17,14 @@ Frontend React ─────────── API HTTP Express ────�
         et position courante
 ```
 
-En développement, Vite et Express sont deux processus séparés. En production,
-Express sert le build statique du frontend et l’API depuis le même port. Cette
-configuration évite une dépendance à une URL d’API codée en dur.
+En développement, Vite et Express sont deux processus séparés. Dans
+l’application desktop, le processus principal Electron démarre Express sur
+`127.0.0.1` avec un port libre attribué par Windows. Express sert le build
+statique du frontend et l’API depuis ce même port. Cette configuration évite
+une dépendance à une URL d’API codée en dur et les collisions de port.
+
+Le rendu Electron est isolé, sans accès Node, sans `webview` et sans ouverture
+de navigation externe. Les permissions navigateur sont refusées par défaut.
 
 ## Frontend
 
@@ -75,7 +80,8 @@ backend/src/
 ├── types/                   contrats du catalogue
 ├── app.ts                   middleware, API et frontend statique
 ├── config.ts                configuration d’environnement
-└── server.ts                démarrage et arrêt propre
+├── httpServer.ts            cycle de vie et port HTTP dynamique
+└── server.ts                point d’entrée du mode source
 ```
 
 La séparation est volontaire : une route ne contient pas de SQL et un dépôt
@@ -122,6 +128,10 @@ La base active le mode WAL, les clés étrangères et un délai d’attente en c
 de verrouillage. Les données initiales ne sont insérées que si le catalogue est
 vide. Les migrations sont appliquées au démarrage.
 
+En mode desktop, SQLite et les photos résident dans
+`%APPDATA%\Bruno Pizza\data\`. Le code installé et les données utilisateur sont
+donc séparés ; le paquet ne contient pas la base locale de développement.
+
 ## Sécurité et intégrité
 
 - écoute sur l’interface locale `127.0.0.1` par défaut ;
@@ -144,9 +154,12 @@ doit donc pas être exposé tel quel sur Internet ou sur un réseau non maîtris
 
 - lint ESLint du frontend ;
 - vérification TypeScript des deux applications ;
-- tests unitaires Vitest du domaine frontend ;
+- tests unitaires Node du domaine frontend ;
 - tests Node du backend et tests d’intégration HTTP ;
+- tests du calcul des chemins desktop Windows et du port dynamique ;
 - builds de production Vite et TypeScript ;
+- paquet Electron contrôlé sur le système courant ;
+- installateur Squirrel.Windows fabriqué par un workflow Windows manuel ;
 - commande agrégée `npm run release:check`.
 
 Le répertoire `dist/`, les dépendances, les variables locales, SQLite et les

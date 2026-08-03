@@ -1,0 +1,56 @@
+name: Fabriquer l'installateur Windows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-windows:
+    name: Bruno Pizza 1.0.0 — Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Récupérer les sources
+        uses: actions/checkout@v6
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Installer les dépendances desktop
+        run: npm ci
+
+      - name: Installer les dépendances de l'application
+        run: npm run install:all
+
+      - name: Vérifier et fabriquer l'installateur
+        run: npm run make:windows
+
+      - name: Contrôler le fichier final
+        shell: pwsh
+        run: |
+          $installer = "out/make/squirrel.windows/x64/Bruno-Pizza-Setup-1.0.0.exe"
+          if (-not (Test-Path $installer -PathType Leaf)) {
+            throw "Installateur introuvable : $installer"
+          }
+          $hash = (Get-FileHash $installer -Algorithm SHA256).Hash
+          "### Installateur Windows" >> $env:GITHUB_STEP_SUMMARY
+          "``Bruno-Pizza-Setup-1.0.0.exe``" >> $env:GITHUB_STEP_SUMMARY
+          "SHA-256 : ``$hash``" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Publier l'installateur unique
+        uses: actions/upload-artifact@v7
+        with:
+          path: out/make/squirrel.windows/x64/Bruno-Pizza-Setup-1.0.0.exe
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
