@@ -34,7 +34,8 @@
   "devDependencies": {
     "@electron-forge/cli": "^7.11.2",
     "@electron-forge/maker-squirrel": "^7.11.2",
-    "electron": "^43.2.0"
+    "electron": "^43.2.0",
+    "encoding": "0.1.13"
   },
   "overrides": {
     "tar": "7.5.22",
