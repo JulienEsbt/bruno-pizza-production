@@ -1,4 +1,4 @@
-# Architecture technique — Bruno Pizza 1.0.0
+# Architecture technique — Bruno Pizza 1.1.0
 
 ## Vue d’ensemble
 
@@ -19,7 +19,7 @@ Fenêtre Electron ─ Frontend React ─ API HTTP Express ─ SQLite
 
 En développement, Vite et Express sont deux processus séparés. Dans
 l’application desktop, le processus principal Electron démarre Express sur
-`127.0.0.1` avec un port libre attribué par Windows. Express sert le build
+`127.0.0.1` avec un port libre attribué par le système. Express sert le build
 statique du frontend et l’API depuis ce même port. Cette configuration évite
 une dépendance à une URL d’API codée en dur et les collisions de port.
 
@@ -135,8 +135,10 @@ de verrouillage. Les données initiales ne sont insérées que si le catalogue e
 vide. Les migrations sont appliquées au démarrage.
 
 En mode desktop, SQLite et les photos résident dans
-`%APPDATA%\Bruno Pizza\data\`. Le code installé et les données utilisateur sont
-donc séparés ; le paquet ne contient pas la base locale de développement.
+`%APPDATA%\Bruno Pizza\data\` sous Windows et dans
+`~/Library/Application Support/Bruno Pizza/data/` sous macOS. Le code installé
+et les données utilisateur sont donc séparés ; le paquet ne contient pas la
+base locale de développement.
 
 ## Sécurité et intégrité
 
@@ -153,7 +155,7 @@ donc séparés ; le paquet ne contient pas la base locale de développement.
 - ressources statiques versionnées mises en cache, `index.html` non mis en
   cache.
 
-La 1.0.0 n’intègre ni comptes utilisateurs ni authentification. Le serveur ne
+La 1.1.0 n’intègre ni comptes utilisateurs ni authentification. Le serveur ne
 doit donc pas être exposé tel quel sur Internet ou sur un réseau non maîtrisé.
 
 ## Qualité et vérification
@@ -162,10 +164,11 @@ doit donc pas être exposé tel quel sur Internet ou sur un réseau non maîtris
 - vérification TypeScript des deux applications ;
 - tests unitaires Node du domaine frontend ;
 - tests Node du backend et tests d’intégration HTTP ;
-- tests du calcul des chemins desktop Windows et du port dynamique ;
+- tests du calcul des chemins desktop, du port dynamique et du zoom ;
 - builds de production Vite et TypeScript ;
 - paquet Electron contrôlé sur le système courant ;
 - installateur Squirrel.Windows fabriqué par un workflow Windows manuel ;
+- paquet macOS Apple Silicon fabriqué sur macOS ;
 - commande agrégée `npm run release:check`.
 
 Le répertoire `dist/`, les dépendances, les variables locales, SQLite et les

@@ -2,6 +2,25 @@
 
 Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
+## 1.1.0 — 3 août 2026
+
+### Évolutions
+
+- catalogue initial aligné sur les 11 pizzas actives et leur ordre métier ;
+- migration prudente de l’ancien catalogue intact sans écraser les
+  personnalisations existantes ;
+- centrage amélioré du tableau de production ;
+- distributeurs plus lisibles dans le parcours de fabrication ;
+- zoom desktop par raccourcis clavier et molette ;
+- livraison Windows x64 et macOS Apple Silicon réunies dans une Release privée.
+
+## 1.0.1 — 3 août 2026
+
+### Correctif
+
+- restauration du chargement de l’interface dans l’application Windows
+  empaquetée grâce à une origine desktop stable.
+
 ## 1.0.0 — 31 juillet 2026
 
 Première version stable destinée aux essais en conditions réelles.

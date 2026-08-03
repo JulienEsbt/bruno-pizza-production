@@ -97,9 +97,10 @@ retard.
 Le raccourci `T` change le thème clair ou sombre sur tous les écrans. Les
 raccourcis sont ignorés pendant la saisie dans un champ.
 
-Dans l’application Windows, `Ctrl` + `+` agrandit l’affichage, `Ctrl` + `-`
-le réduit et `Ctrl` + `0` restaure le niveau conseillé. La molette de la souris
-avec `Ctrl` permet également de zoomer.
+Dans l’application desktop, `Ctrl` + `+` agrandit l’affichage, `Ctrl` + `-`
+le réduit et `Ctrl` + `0` restaure le niveau conseillé. Sur macOS, utilisez
+`Cmd` à la place de `Ctrl`. La molette avec cette même touche permet également
+de zoomer.
 
 ### Tableau de production
 
@@ -142,7 +143,8 @@ ordre sans souris.
 
 - Contrôlez les totaux avant de lancer la fabrication.
 - Ne fermez pas l’onglet pendant une modification du catalogue.
-- Sauvegardez régulièrement le dossier `backend/data/`.
+- Sauvegardez régulièrement le dossier de données indiqué dans le guide
+  d’installation selon votre mode d’utilisation.
 - Utilisez le bouton **Vider la production** uniquement lorsque le tableau
   chargé n’est plus nécessaire.
 - En cas de message d’erreur, conservez le texte exact pour faciliter le
