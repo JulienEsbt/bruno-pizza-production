@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   package-windows:
-    name: Appli Montage 1.1.3 — Windows x64
+    name: Appli Montage 1.1.4 — Windows x64
     runs-on: windows-latest
     timeout-minutes: 30
 
@@ -38,7 +38,7 @@ jobs:
       - name: Contrôler le fichier final
         shell: pwsh
         run: |
-          $installer = "out/make/squirrel.windows/x64/Appli-Montage-Setup-1.1.3.exe"
+          $installer = "out/make/squirrel.windows/x64/Appli-Montage-Setup-1.1.4.exe"
           if (-not (Test-Path $installer -PathType Leaf)) {
             throw "Installateur introuvable : $installer"
           }
@@ -50,7 +50,7 @@ jobs:
       - name: Publier l'installateur unique
         uses: actions/upload-artifact@v7
         with:
-          path: out/make/squirrel.windows/x64/Appli-Montage-Setup-1.1.3.exe
+          path: out/make/squirrel.windows/x64/Appli-Montage-Setup-1.1.4.exe
           archive: false
           if-no-files-found: error
           retention-days: 14

@@ -1,4 +1,4 @@
-# Guide utilisateur — Appli Montage 1.1.3
+# Guide utilisateur — Appli Montage 1.1.4
 
 Ce guide s’adresse aux personnes qui préparent les productions et fabriquent
 les pizzas. L’application comporte trois écrans : le tableau de production, le
@@ -103,6 +103,11 @@ Dans l’application desktop, `Ctrl` + `+` agrandit l’affichage, `Ctrl` + `-`
 le réduit et `Ctrl` + `0` restaure le niveau conseillé. Sur macOS, utilisez
 `Cmd` à la place de `Ctrl`. La molette avec cette même touche permet également
 de zoomer.
+
+L’application s’ouvre directement en plein écran sans bordure. Le niveau
+conseillé correspond à 100 % ; six paliers restent disponibles de 70 % à 130 %.
+Les chiffres et libellés essentiels du tableau sont volontairement plus grands
+que les commandes secondaires pour rester lisibles à distance.
 
 ### Tableau de production
 

@@ -21,7 +21,7 @@ propose trois espaces complémentaires :
 - un **parcours atelier** avec recette, photo, progression et navigation ;
 - des **paramètres métier** pour gérer pizzas, ingrédients et distributeurs.
 
-La version 1.1.3 fonctionne entièrement en local. Excel reste l’unique source
+La version 1.1.4 fonctionne entièrement en local. Excel reste l’unique source
 de production ; l’intégration Adial n’entre pas encore dans son périmètre.
 
 ## Points forts
@@ -30,6 +30,8 @@ de production ; l’intégration Adial n’entre pas encore dans son périmètre
 - contrôle des en-têtes, doublons, quantités et totaux avant affichage ;
 - catalogue SQLite modifiable avec recettes ordonnées et photos ;
 - interface sombre ou claire, pilotable au clavier et zoomable ;
+- affichage atelier en plein écran, avec chiffres et libellés principaux
+  renforcés pour une lecture à distance ;
 - persistance locale séparée des fichiers installés ;
 - serveur Express limité à `127.0.0.1` avec port desktop dynamique ;
 - origine Electron stable pour préserver la session entre les lancements ;
@@ -90,7 +92,9 @@ l’origine interne `bruno-pizza://app`.
 ## Essayer l’application
 
 La page [Releases](https://github.com/JulienEsbt/bruno-pizza-production/releases)
-contient les livraisons disponibles :
+contient les dernières livraisons publiées. La version 1.1.4 est préparée dans
+le code, mais doit encore être empaquetée et validée sur Windows avant diffusion.
+La livraison actuellement disponible reste :
 
 - `Appli-Montage-Setup-1.1.3.exe` pour Windows Intel/AMD 64 bits ;
 - `Appli-Montage-1.1.3-macOS-Apple-Silicon.zip` pour les Mac M1 et suivants.

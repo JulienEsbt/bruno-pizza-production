@@ -24,7 +24,7 @@ business catalog and provides three complementary workspaces:
   navigation;
 - **business settings** for pizzas, ingredients and distributors.
 
-Version 1.1.3 runs entirely on the user's computer. Excel remains the only
+Version 1.1.4 runs entirely on the user's computer. Excel remains the only
 production source; direct Adial integration is not part of the current scope.
 
 ## Product highlights
@@ -33,6 +33,8 @@ production source; direct Adial integration is not part of the current scope.
 - checks headers, duplicates, quantities and totals before displaying data;
 - provides an editable SQLite catalog with ordered recipes and product photos;
 - supports light and dark themes, keyboard controls and interface zoom;
+- opens in fullscreen workshop mode with larger primary figures and labels for
+  easier reading at a distance;
 - keeps user data separate from installed application files;
 - binds the Express server to `127.0.0.1` and selects a free desktop port;
 - uses a stable internal Electron origin to preserve the local session;
@@ -94,7 +96,9 @@ frontend through the internal `bruno-pizza://app` origin.
 ## Download
 
 The [Releases](https://github.com/JulienEsbt/bruno-pizza-production/releases)
-page contains the available builds:
+page contains the latest published builds. Version 1.1.4 is prepared in the
+source code but still requires Windows packaging and validation before release.
+The currently published builds remain:
 
 - `Appli-Montage-Setup-1.1.3.exe` for 64-bit Intel/AMD Windows systems;
 - `Appli-Montage-1.1.3-macOS-Apple-Silicon.zip` for Apple Silicon Macs.
