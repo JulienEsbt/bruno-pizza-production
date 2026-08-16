@@ -38,12 +38,12 @@ test("reconnaît les raccourcis de zoom Windows et macOS", () => {
 });
 
 test("borne le zoom et restaure le niveau lisible par défaut", () => {
-    assert.equal(getNextZoomFactor(1.1, "in"), 1.2);
-    assert.equal(getNextZoomFactor(1.1, "out"), 1);
-    assert.equal(getNextZoomFactor(1.5, "in"), 1.5);
-    assert.equal(getNextZoomFactor(0.8, "out"), 0.8);
+    assert.equal(getNextZoomFactor(1, "in"), 1.1);
+    assert.equal(getNextZoomFactor(1, "out"), 0.9);
+    assert.equal(getNextZoomFactor(1.3, "in"), 1.3);
+    assert.equal(getNextZoomFactor(0.7, "out"), 0.7);
     assert.equal(
-        getNextZoomFactor(1.4, "reset"),
+        getNextZoomFactor(1.2, "reset"),
         DEFAULT_ZOOM_FACTOR,
     );
 });

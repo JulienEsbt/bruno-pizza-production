@@ -21,6 +21,7 @@ import {
     isDesktopNavigation,
 } from "./protocolRouting.mjs";
 import { createBackendRequestInit } from "./requestForwarding.mjs";
+import { getMainWindowOptions } from "./windowOptions.mjs";
 import {
     DEFAULT_ZOOM_FACTOR,
     getNextZoomFactor,
@@ -119,22 +120,9 @@ const createMainWindow = async () => {
         );
     }
 
-    const window = new BrowserWindow({
-        title: APP_NAME,
-        width: 1440,
-        height: 900,
-        minWidth: 1024,
-        minHeight: 700,
-        backgroundColor: "#111827",
-        autoHideMenuBar: true,
-        show: false,
-        webPreferences: {
-            contextIsolation: true,
-            nodeIntegration: false,
-            sandbox: true,
-            webviewTag: false,
-        },
-    });
+    const window = new BrowserWindow(
+        getMainWindowOptions(APP_NAME),
+    );
 
     window.removeMenu();
     window.once("ready-to-show", () => {

@@ -202,8 +202,8 @@
 
 .production-matrix th,
 .production-matrix td {
-    height: 58px;
-    padding: 8px 14px;
+    height: 50px;
+    padding: 6px 12px;
     border-right: 1px solid
         color-mix(
             in srgb,
@@ -255,7 +255,7 @@
                 var(--primary),
                 transparent 84%
             );
-    font-size: 1.02rem;
+    font-size: 1.2rem;
     font-weight: 900;
     letter-spacing: 0.015em;
 }
@@ -266,7 +266,7 @@
     width: 24%;
     min-width: 235px;
     border-top-left-radius: 19px;
-    font-size: 1.06rem !important;
+    font-size: 1.22rem !important;
     text-align: left;
 }
 
@@ -283,7 +283,7 @@
             ),
             var(--primary-soft)
         ) !important;
-    font-size: 1.08rem !important;
+    font-size: 1.3rem !important;
 }
 
 .production-matrix__distributor-header {
@@ -292,7 +292,7 @@
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.28),
         inset 0 -2px 0 rgba(6, 18, 39, 0.1);
-    font-size: 1.06rem !important;
+    font-size: 1.28rem !important;
     letter-spacing: 0.04em !important;
     text-shadow: 0 1px 1px
         rgba(6, 18, 39, 0.12);
@@ -389,7 +389,7 @@
     min-width: 235px;
     color: var(--app-text);
     background: var(--surface);
-    font-size: clamp(0.98rem, 1.25vw, 1.18rem);
+    font-size: clamp(1.16rem, 1.4vw, 1.38rem);
     font-weight: 950;
     letter-spacing: -0.015em;
     text-align: left;
@@ -408,7 +408,7 @@
             ),
             var(--primary-soft)
         );
-    font-size: 1.52rem;
+    font-size: 1.75rem;
     font-weight: 950;
 }
 
@@ -423,7 +423,7 @@
             ),
             transparent 66%
         );
-    font-size: 1.32rem;
+    font-size: 1.6rem;
     font-weight: 950;
 }
 
@@ -462,7 +462,7 @@
 
 .production-matrix tfoot th,
 .production-matrix tfoot td {
-    height: 58px;
+    height: 50px;
     color: var(--app-text);
     background:
         linear-gradient(
@@ -476,7 +476,7 @@
         );
     border-top: 3px solid var(--primary);
     border-bottom: 0;
-    font-size: 1.24rem;
+    font-size: 1.45rem;
     font-weight: 950;
     box-shadow: inset 0 1px 0
         color-mix(
@@ -506,7 +506,7 @@
             ),
             var(--primary-soft)
         );
-    font-size: 1.55rem;
+    font-size: 1.8rem;
 }
 
 .production-matrix tfoot
