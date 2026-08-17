@@ -29,7 +29,7 @@
 }
 
 .production-clock strong {
-    font-size: 1.46rem;
+    font-size: 1.85rem;
     font-weight: 900;
     letter-spacing: -0.04em;
     line-height: 1;
@@ -39,7 +39,7 @@
     color: var(--text-muted);
     max-width: 150px;
     overflow: hidden;
-    font-size: 0.61rem;
+    font-size: 0.82rem;
     font-weight: 750;
     text-align: center;
     text-overflow: ellipsis;
@@ -64,14 +64,14 @@
 }
 
 .production-progress__labels strong {
-    font-size: 0.76rem;
+    font-size: 1rem;
     font-weight: 900;
     letter-spacing: 0.065em;
     text-transform: uppercase;
 }
 
 .production-progress__labels span {
-    font-size: 0.98rem;
+    font-size: 1.28rem;
     font-weight: 900;
 }
 

@@ -4,6 +4,7 @@ import {
     dialog,
     net,
     protocol,
+    screen,
     session,
 } from "electron";
 import path from "node:path";
@@ -23,7 +24,7 @@ import {
 import { createBackendRequestInit } from "./requestForwarding.mjs";
 import { getMainWindowOptions } from "./windowOptions.mjs";
 import {
-    DEFAULT_ZOOM_FACTOR,
+    getDefaultZoomFactor,
     getNextZoomFactor,
     getZoomAction,
 } from "./zoom.mjs";
@@ -137,11 +138,18 @@ const createMainWindow = async () => {
     window.webContents.setWindowOpenHandler(
         () => ({ action: "deny" }),
     );
-    let currentZoomFactor = DEFAULT_ZOOM_FACTOR;
+    const displayScaleFactor = screen
+        .getDisplayMatching(window.getBounds())
+        .scaleFactor;
+    const defaultZoomFactor = getDefaultZoomFactor(
+        displayScaleFactor,
+    );
+    let currentZoomFactor = defaultZoomFactor;
     const applyZoom = (action) => {
         currentZoomFactor = getNextZoomFactor(
             currentZoomFactor,
             action,
+            defaultZoomFactor,
         );
         window.webContents.setZoomFactor(
             currentZoomFactor,

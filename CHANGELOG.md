@@ -8,8 +8,10 @@ Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
 - ouverture de l’application en plein écran sans bordure afin de masquer la
   barre de titre et la barre des tâches sur l’écran de production ;
-- zoom initial ramené à un niveau neutre, avec une plage équilibrée de 70 % à
-  130 % autour du niveau conseillé ;
+- zoom initial adapté à l’écran : 100 % en affichage classique et 80 % lorsque
+  Windows utilise une très forte mise à l’échelle, avec une plage de 70 % à
+  130 % ;
+- remise à zéro du zoom compatible avec la touche `0` des claviers AZERTY ;
 - lignes du tableau compactées pour afficher davantage de pizzas sans défilement
   vertical sur un écran Full HD ;
 - agrandissement ciblé des noms de pizzas, quantités, totaux et intitulés des

@@ -100,7 +100,7 @@
 
 .production-panel-heading span {
     color: var(--text-muted);
-    font-size: 0.68rem;
+    font-size: 0.95rem;
     font-weight: 900;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -110,7 +110,7 @@
     margin: 0;
     overflow: hidden;
     color: var(--app-text);
-    font-size: 1.24rem;
+    font-size: 1.65rem;
     font-weight: 900;
     letter-spacing: -0.025em;
     text-overflow: ellipsis;
@@ -135,13 +135,13 @@
             transparent 72%
         );
     border-radius: 11px;
-    font-size: 1.2rem;
+    font-size: 1.55rem;
     font-weight: 950;
 }
 
 .production-panel-step small {
     color: var(--text-muted);
-    font-size: 0.72rem;
+    font-size: 0.9rem;
 }
 
 .production-sequence__current {
@@ -206,7 +206,7 @@
             transparent 76%
         );
     border-radius: 999px;
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     font-weight: 900;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -281,7 +281,7 @@
     display: grid;
     gap: 2px;
     color: var(--app-text);
-    font-size: 0.78rem;
+    font-size: 1.1rem;
     font-weight: 850;
     line-height: 1.05;
     text-align: left;
@@ -289,7 +289,7 @@
 
 .production-sequence__quantity small span {
     color: var(--text-muted);
-    font-size: 0.65rem;
+    font-size: 0.9rem;
     font-weight: 700;
 }
 
@@ -337,7 +337,7 @@
     align-items: center;
     gap: 5px;
     color: var(--text-muted);
-    font-size: 0.58rem;
+    font-size: 0.85rem;
     font-weight: 900;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -363,7 +363,7 @@
 .production-sequence__preview > span {
     overflow: hidden;
     color: var(--app-text);
-    font-size: 0.76rem;
+    font-size: 1.15rem;
     font-weight: 850;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -371,7 +371,7 @@
 
 .production-sequence__preview > strong {
     color: var(--panel-accent);
-    font-size: 1rem;
+    font-size: 1.4rem;
 }
 
 .production-recipe__count {
@@ -393,13 +393,13 @@
             transparent 74%
         );
     border-radius: 12px;
-    font-size: 1.04rem;
+    font-size: 1.4rem;
     line-height: 1;
 }
 
 .production-recipe__count small {
     color: var(--text-muted);
-    font-size: 0.54rem;
+    font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -465,13 +465,13 @@
             transparent 76%
         );
     border-radius: 11px;
-    font-size: 0.78rem;
+    font-size: 1.15rem;
     font-weight: 900;
 }
 
 .production-ingredient-list strong {
     overflow: hidden;
-    font-size: 0.92rem;
+    font-size: 1.45rem;
     font-weight: 850;
     letter-spacing: 0.005em;
     text-overflow: ellipsis;
