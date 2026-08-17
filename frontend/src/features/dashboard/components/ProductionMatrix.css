@@ -188,7 +188,8 @@
     align-items: safe center;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .production-matrix table {
@@ -201,9 +202,15 @@
     font-variant-numeric: tabular-nums;
 }
 
+.production-matrix tr {
+    height: calc(
+        100% / var(--production-matrix-row-count)
+    );
+}
+
 .production-matrix th,
 .production-matrix td {
-    height: 43px;
+    height: auto;
     padding: 0 12px;
     border-right: 1px solid
         color-mix(
@@ -478,7 +485,7 @@
         );
     border-top: 3px solid var(--primary);
     border-bottom: 0;
-    font-size: 2.3rem;
+    font-size: 2.05rem;
     font-weight: 700;
     box-shadow: inset 0 1px 0
         color-mix(
@@ -508,7 +515,13 @@
             ),
             var(--primary-soft)
         );
-    font-size: 2.75rem;
+    font-size: 2.55rem;
+}
+
+@media (max-height: 760px) {
+    .production-matrix__scroll {
+        overflow-y: auto;
+    }
 }
 
 .production-matrix tfoot

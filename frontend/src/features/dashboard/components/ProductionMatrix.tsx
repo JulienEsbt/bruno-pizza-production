@@ -1,4 +1,5 @@
 import {
+    type CSSProperties,
     type DragEvent,
     type PointerEvent,
     useMemo,
@@ -351,6 +352,12 @@ export default function ProductionMatrix({
         <section className="production-matrix">
             <div className="production-matrix__scroll">
                 <table
+                    style={
+                        {
+                            "--production-matrix-row-count":
+                                orderedPizzas.length + 2,
+                        } as CSSProperties
+                    }
                     onPointerOver={handleCellPointerOver}
                     onPointerLeave={() =>
                         setHoveredColumnIndex(null)
