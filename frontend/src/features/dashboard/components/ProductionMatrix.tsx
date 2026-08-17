@@ -356,6 +356,8 @@ export default function ProductionMatrix({
                         {
                             "--production-matrix-row-count":
                                 orderedPizzas.length + 2,
+                            "--production-matrix-distributor-count":
+                                distributors.length,
                         } as CSSProperties
                     }
                     onPointerOver={handleCellPointerOver}

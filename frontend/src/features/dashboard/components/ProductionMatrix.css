@@ -193,7 +193,19 @@
 }
 
 .production-matrix table {
+    display: grid;
     flex: 0 0 auto;
+    grid-template-columns:
+        minmax(235px, 24%)
+        94px
+        repeat(
+            var(--production-matrix-distributor-count),
+            minmax(94px, 1fr)
+        );
+    grid-template-rows: repeat(
+        var(--production-matrix-row-count),
+        minmax(max-content, 1fr)
+    );
     width: 100%;
     height: calc(100% - 4px);
     min-width: 920px;
@@ -202,14 +214,18 @@
     font-variant-numeric: tabular-nums;
 }
 
+.production-matrix thead,
+.production-matrix tbody,
+.production-matrix tfoot,
 .production-matrix tr {
-    height: calc(
-        100% / var(--production-matrix-row-count)
-    );
+    display: contents;
 }
 
 .production-matrix th,
 .production-matrix td {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: auto;
     padding: 0 12px;
     border-right: 1px solid
@@ -234,12 +250,13 @@
 }
 
 .production-matrix thead {
-    position: sticky;
-    top: 0;
     z-index: 3;
 }
 
 .production-matrix thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
     color: var(--app-text);
     background:
         linear-gradient(
@@ -276,6 +293,7 @@
     min-width: 235px;
     border-top-left-radius: 19px;
     font-size: 2.05rem !important;
+    justify-content: flex-start;
     text-align: left;
 }
 
@@ -464,14 +482,14 @@
 }
 
 .production-matrix tfoot {
-    position: sticky;
-    bottom: 0;
     z-index: 4;
 }
 
 .production-matrix tfoot th,
 .production-matrix tfoot td {
-    height: 43px;
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
     color: var(--app-text);
     background:
         linear-gradient(
@@ -500,6 +518,7 @@
     left: 0;
     z-index: 5;
     border-bottom-left-radius: 19px;
+    justify-content: flex-start;
     text-align: left;
 }
 
