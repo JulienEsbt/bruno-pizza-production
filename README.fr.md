@@ -92,12 +92,14 @@ l’origine interne `bruno-pizza://app`.
 ## Essayer l’application
 
 La page [Releases](https://github.com/JulienEsbt/bruno-pizza-production/releases)
-contient les dernières livraisons publiées. La version 1.1.4 est préparée dans
-le code, mais doit encore être empaquetée et validée sur Windows avant diffusion.
-La livraison actuellement disponible reste :
+contient les dernières livraisons publiées. La version 1.1.4 a été validée sur
+l’écran Windows 43 pouces de production et constitue la livraison Windows
+actuelle :
 
-- `Appli-Montage-Setup-1.1.3.exe` pour Windows Intel/AMD 64 bits ;
-- `Appli-Montage-1.1.3-macOS-Apple-Silicon.zip` pour les Mac M1 et suivants.
+- `Appli-Montage-Setup-1.1.4.exe` pour Windows Intel/AMD 64 bits.
+
+La dernière livraison macOS Apple Silicon reste
+`Appli-Montage-1.1.3-macOS-Apple-Silicon.zip`.
 
 Ces versions sont actuellement non signées et destinées aux tests. Windows
 SmartScreen ou macOS Gatekeeper peut donc demander une confirmation au premier

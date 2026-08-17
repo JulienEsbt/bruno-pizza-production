@@ -39,7 +39,7 @@ production source; direct Adial integration is not part of the current scope.
 - binds the Express server to `127.0.0.1` and selects a free desktop port;
 - uses a stable internal Electron origin to preserve the local session;
 - runs frontend, backend and desktop tests in GitHub Actions;
-- is documented, packaged and distributed for Windows and macOS.
+- is documented and packaged for Windows and macOS.
 
 ## Screenshots
 
@@ -96,12 +96,13 @@ frontend through the internal `bruno-pizza://app` origin.
 ## Download
 
 The [Releases](https://github.com/JulienEsbt/bruno-pizza-production/releases)
-page contains the latest published builds. Version 1.1.4 is prepared in the
-source code but still requires Windows packaging and validation before release.
-The currently published builds remain:
+page contains the latest published builds. Version 1.1.4 was validated on the
+43-inch Windows production display and is the current Windows release:
 
-- `Appli-Montage-Setup-1.1.3.exe` for 64-bit Intel/AMD Windows systems;
-- `Appli-Montage-1.1.3-macOS-Apple-Silicon.zip` for Apple Silicon Macs.
+- `Appli-Montage-Setup-1.1.4.exe` for 64-bit Intel/AMD Windows systems.
+
+The latest macOS Apple Silicon build remains
+`Appli-Montage-1.1.3-macOS-Apple-Silicon.zip`.
 
 The current builds are not code-signed. Windows SmartScreen or macOS Gatekeeper
 may therefore ask for confirmation on first launch.

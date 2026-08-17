@@ -21,9 +21,11 @@ Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
 ### Périmètre
 
-- l’en-tête du tableau est conservé ; sa réorganisation reste une piste de
-  secours si la recette d’affichage doit encore évoluer après essai sur le
-  téléviseur 43 pouces ;
+- validation terrain sur l’écran Windows 43 pouces de production : tableau
+  complet lisible sans défilement au zoom initial et parcours de fabrication
+  fonctionnel ;
+- l’en-tête du tableau est conservé, sans la réorganisation envisagée pendant
+  les premiers essais ;
 - l’automatisation de la récupération du fichier de production reste une piste
   future et n’entre pas dans cette version.
 

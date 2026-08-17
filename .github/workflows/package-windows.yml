@@ -44,7 +44,7 @@ jobs:
           }
           $hash = (Get-FileHash $installer -Algorithm SHA256).Hash
           "### Installateur Windows" >> $env:GITHUB_STEP_SUMMARY
-          "``Appli-Montage-Setup-1.1.3.exe``" >> $env:GITHUB_STEP_SUMMARY
+          "``Appli-Montage-Setup-1.1.4.exe``" >> $env:GITHUB_STEP_SUMMARY
           "SHA-256 : ``$hash``" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Publier l'installateur unique
