@@ -1,4 +1,5 @@
 import {
+    type CSSProperties,
     type DragEvent,
     type PointerEvent,
     useMemo,
@@ -48,6 +49,15 @@ const FAMILY_ORDER: PizzaFamily[] = [
     "cream",
     "other",
 ];
+
+const formatPizzaDisplayName = (value: string): string => {
+    return normalizePizzaName(value)
+        .toLocaleLowerCase("fr-FR")
+        .replace(
+            /(^|[\s-])\p{L}/gu,
+            (match) => match.toLocaleUpperCase("fr-FR"),
+        );
+};
 
 const getCellClassName = (
     baseClassName: string,
@@ -342,6 +352,14 @@ export default function ProductionMatrix({
         <section className="production-matrix">
             <div className="production-matrix__scroll">
                 <table
+                    style={
+                        {
+                            "--production-matrix-row-count":
+                                orderedPizzas.length + 2,
+                            "--production-matrix-distributor-count":
+                                distributors.length,
+                        } as CSSProperties
+                    }
                     onPointerOver={handleCellPointerOver}
                     onPointerLeave={() =>
                         setHoveredColumnIndex(null)
@@ -417,7 +435,7 @@ export default function ProductionMatrix({
                                     )}
                                     scope="row"
                                 >
-                                    {normalizePizzaName(
+                                    {formatPizzaDisplayName(
                                         pizza.name,
                                     )}
                                 </th>

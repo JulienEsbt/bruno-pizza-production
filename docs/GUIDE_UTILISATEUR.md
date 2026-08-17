@@ -1,4 +1,4 @@
-# Guide utilisateur — Appli Montage 1.1.3
+# Guide utilisateur — Appli Montage 1.1.4
 
 Ce guide s’adresse aux personnes qui préparent les productions et fabriquent
 les pizzas. L’application comporte trois écrans : le tableau de production, le
@@ -100,9 +100,17 @@ Le raccourci `T` change le thème clair ou sombre sur tous les écrans. Les
 raccourcis sont ignorés pendant la saisie dans un champ.
 
 Dans l’application desktop, `Ctrl` + `+` agrandit l’affichage, `Ctrl` + `-`
-le réduit et `Ctrl` + `0` restaure le niveau conseillé. Sur macOS, utilisez
-`Cmd` à la place de `Ctrl`. La molette avec cette même touche permet également
-de zoomer.
+le réduit et `Ctrl` + `0` restaure le niveau conseillé pour l’écran. Sur macOS,
+utilisez `Cmd` à la place de `Ctrl`. La molette avec cette même touche permet
+également de zoomer.
+
+L’application s’ouvre directement en plein écran sans bordure. Le niveau
+conseillé correspond à 100 % sur un affichage classique. Lorsque Windows
+utilise une très forte mise à l’échelle, par exemple 300 % sur un écran 4K,
+l’application choisit automatiquement 80 % pour conserver toute la hauteur du
+tableau. Les paliers de 70 % à 130 % restent disponibles.
+Les chiffres et libellés essentiels du tableau sont volontairement plus grands
+que les commandes secondaires pour rester lisibles à distance.
 
 ### Tableau de production
 

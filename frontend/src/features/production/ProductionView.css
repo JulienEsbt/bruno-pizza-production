@@ -54,7 +54,7 @@
     align-self: center;
     margin: 0 10px;
     color: var(--text-muted);
-    font-size: 0.78rem;
+    font-size: 1.05rem;
 }
 
 .production-distributor {
@@ -78,7 +78,7 @@
 }
 
 .production-distributor span {
-    font-size: 0.9rem;
+    font-size: 1.35rem;
     font-weight: 900;
     letter-spacing: 0.04em;
 }
@@ -87,7 +87,7 @@
     color: var(--app-text);
     background: var(--surface);
     border-bottom: 4px solid;
-    font-size: 1.5rem;
+    font-size: 2.2rem;
 }
 
 .production--empty {

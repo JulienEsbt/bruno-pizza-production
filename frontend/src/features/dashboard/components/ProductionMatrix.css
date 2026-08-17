@@ -188,22 +188,46 @@
     align-items: safe center;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .production-matrix table {
+    display: grid;
     flex: 0 0 auto;
+    grid-template-columns:
+        minmax(235px, 24%)
+        94px
+        repeat(
+            var(--production-matrix-distributor-count),
+            minmax(94px, 1fr)
+        );
+    grid-template-rows: repeat(
+        var(--production-matrix-row-count),
+        minmax(max-content, 1fr)
+    );
     width: 100%;
+    height: calc(100% - 4px);
     min-width: 920px;
     border-collapse: separate;
     border-spacing: 0;
     font-variant-numeric: tabular-nums;
 }
 
+.production-matrix thead,
+.production-matrix tbody,
+.production-matrix tfoot,
+.production-matrix tr {
+    display: contents;
+}
+
 .production-matrix th,
 .production-matrix td {
-    height: 58px;
-    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    padding: 0 12px;
     border-right: 1px solid
         color-mix(
             in srgb,
@@ -217,6 +241,7 @@
             var(--border) 90%
         );
     text-align: center;
+    line-height: 1;
     transition: background 120ms ease;
 }
 
@@ -225,12 +250,13 @@
 }
 
 .production-matrix thead {
-    position: sticky;
-    top: 0;
     z-index: 3;
 }
 
 .production-matrix thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
     color: var(--app-text);
     background:
         linear-gradient(
@@ -255,18 +281,18 @@
                 var(--primary),
                 transparent 84%
             );
-    font-size: 1.02rem;
-    font-weight: 900;
+    font-size: 1.95rem;
+    font-weight: 700;
     letter-spacing: 0.015em;
 }
 
 .production-matrix__recipe-column {
     left: 0;
     z-index: 4;
-    width: 24%;
     min-width: 235px;
     border-top-left-radius: 19px;
-    font-size: 1.06rem !important;
+    font-size: 2.05rem !important;
+    justify-content: flex-start;
     text-align: left;
 }
 
@@ -283,7 +309,7 @@
             ),
             var(--primary-soft)
         ) !important;
-    font-size: 1.08rem !important;
+    font-size: 2.25rem !important;
 }
 
 .production-matrix__distributor-header {
@@ -292,7 +318,7 @@
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.28),
         inset 0 -2px 0 rgba(6, 18, 39, 0.1);
-    font-size: 1.06rem !important;
+    font-size: 2.05rem !important;
     letter-spacing: 0.04em !important;
     text-shadow: 0 1px 1px
         rgba(6, 18, 39, 0.12);
@@ -389,8 +415,8 @@
     min-width: 235px;
     color: var(--app-text);
     background: var(--surface);
-    font-size: clamp(0.98rem, 1.25vw, 1.18rem);
-    font-weight: 950;
+    font-size: clamp(1.9rem, 2vw, 2.25rem);
+    font-weight: 600;
     letter-spacing: -0.015em;
     text-align: left;
 }
@@ -408,8 +434,8 @@
             ),
             var(--primary-soft)
         );
-    font-size: 1.52rem;
-    font-weight: 950;
+    font-size: 2.65rem;
+    font-weight: 700;
 }
 
 .production-matrix__quantity {
@@ -423,8 +449,8 @@
             ),
             transparent 66%
         );
-    font-size: 1.32rem;
-    font-weight: 950;
+    font-size: 2.55rem;
+    font-weight: 700;
 }
 
 .production-matrix__quantity--zero {
@@ -455,14 +481,14 @@
 }
 
 .production-matrix tfoot {
-    position: sticky;
-    bottom: 0;
     z-index: 4;
 }
 
 .production-matrix tfoot th,
 .production-matrix tfoot td {
-    height: 58px;
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
     color: var(--app-text);
     background:
         linear-gradient(
@@ -476,8 +502,8 @@
         );
     border-top: 3px solid var(--primary);
     border-bottom: 0;
-    font-size: 1.24rem;
-    font-weight: 950;
+    font-size: 2.05rem;
+    font-weight: 700;
     box-shadow: inset 0 1px 0
         color-mix(
             in srgb,
@@ -491,6 +517,7 @@
     left: 0;
     z-index: 5;
     border-bottom-left-radius: 19px;
+    justify-content: flex-start;
     text-align: left;
 }
 
@@ -506,7 +533,13 @@
             ),
             var(--primary-soft)
         );
-    font-size: 1.55rem;
+    font-size: 2.55rem;
+}
+
+@media (max-height: 760px) {
+    .production-matrix__scroll {
+        overflow-y: auto;
+    }
 }
 
 .production-matrix tfoot

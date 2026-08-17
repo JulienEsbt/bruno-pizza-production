@@ -2,6 +2,33 @@
 
 Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
+## 1.1.4 — 17 août 2026
+
+### Affichage atelier
+
+- ouverture de l’application en plein écran sans bordure afin de masquer la
+  barre de titre et la barre des tâches sur l’écran de production ;
+- zoom initial adapté à l’écran : 100 % en affichage classique et 80 % lorsque
+  Windows utilise une très forte mise à l’échelle, avec une plage de 70 % à
+  130 % ;
+- remise à zéro du zoom compatible avec la touche `0` des claviers AZERTY ;
+- lignes du tableau compactées pour afficher davantage de pizzas sans défilement
+  vertical sur un écran Full HD ;
+- agrandissement ciblé des noms de pizzas, quantités, totaux et intitulés des
+  distributeurs, sans grossir toute l’interface ;
+- affichage complet des photos de pizzas dans le parcours de fabrication, sans
+  rognage automatique.
+
+### Périmètre
+
+- validation terrain sur l’écran Windows 43 pouces de production : tableau
+  complet lisible sans défilement au zoom initial et parcours de fabrication
+  fonctionnel ;
+- l’en-tête du tableau est conservé, sans la réorganisation envisagée pendant
+  les premiers essais ;
+- l’automatisation de la récupération du fichier de production reste une piste
+  future et n’entre pas dans cette version.
+
 ## 1.1.3 — 3 août 2026
 
 ### Identité produit
