@@ -202,8 +202,8 @@
 
 .production-matrix th,
 .production-matrix td {
-    height: 50px;
-    padding: 2px 12px;
+    height: 43px;
+    padding: 0 12px;
     border-right: 1px solid
         color-mix(
             in srgb,
@@ -257,7 +257,7 @@
                 transparent 84%
             );
     font-size: 1.95rem;
-    font-weight: 900;
+    font-weight: 800;
     letter-spacing: 0.015em;
 }
 
@@ -391,7 +391,7 @@
     color: var(--app-text);
     background: var(--surface);
     font-size: clamp(1.9rem, 2vw, 2.25rem);
-    font-weight: 950;
+    font-weight: 800;
     letter-spacing: -0.015em;
     text-align: left;
 }
@@ -410,7 +410,7 @@
             var(--primary-soft)
         );
     font-size: 2.65rem;
-    font-weight: 950;
+    font-weight: 850;
 }
 
 .production-matrix__quantity {
@@ -425,7 +425,7 @@
             transparent 66%
         );
     font-size: 2.55rem;
-    font-weight: 950;
+    font-weight: 800;
 }
 
 .production-matrix__quantity--zero {
@@ -463,7 +463,7 @@
 
 .production-matrix tfoot th,
 .production-matrix tfoot td {
-    height: 50px;
+    height: 43px;
     color: var(--app-text);
     background:
         linear-gradient(
@@ -478,7 +478,7 @@
     border-top: 3px solid var(--primary);
     border-bottom: 0;
     font-size: 2.3rem;
-    font-weight: 950;
+    font-weight: 800;
     box-shadow: inset 0 1px 0
         color-mix(
             in srgb,
@@ -514,6 +514,18 @@
     tr
     > :last-child {
     border-bottom-right-radius: 19px;
+}
+
+@media (min-height: 1100px) {
+    .production-matrix {
+        height: auto;
+        max-height: 100%;
+    }
+
+    .production-matrix__scroll {
+        height: auto;
+        max-height: 100%;
+    }
 }
 
 @media (max-width: 620px) {
