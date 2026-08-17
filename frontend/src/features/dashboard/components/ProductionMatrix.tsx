@@ -49,6 +49,15 @@ const FAMILY_ORDER: PizzaFamily[] = [
     "other",
 ];
 
+const formatPizzaDisplayName = (value: string): string => {
+    return normalizePizzaName(value)
+        .toLocaleLowerCase("fr-FR")
+        .replace(
+            /(^|[\s-])\p{L}/gu,
+            (match) => match.toLocaleUpperCase("fr-FR"),
+        );
+};
+
 const getCellClassName = (
     baseClassName: string,
     columnIndex: number,
@@ -417,7 +426,7 @@ export default function ProductionMatrix({
                                     )}
                                     scope="row"
                                 >
-                                    {normalizePizzaName(
+                                    {formatPizzaDisplayName(
                                         pizza.name,
                                     )}
                                 </th>
