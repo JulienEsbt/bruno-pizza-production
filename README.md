@@ -37,7 +37,7 @@ business catalog and provides three complementary workspaces:
   navigation;
 - **business settings** for pizzas, ingredients and distributors.
 
-Version 1.1.4 runs entirely on the user's computer. Excel remains the only
+The application runs entirely on the user's computer. Excel remains the only
 production source; direct Adial integration is not part of the current scope.
 
 ## Product highlights

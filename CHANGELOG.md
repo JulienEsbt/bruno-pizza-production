@@ -1,5 +1,11 @@
 # Historique des versions
 
+## 1.2.0 — build de recette V2 — 2026-10-02
+
+- Ajout : photos de démonstration de la Reine, embarquées uniquement dans les builds de test sur option, installation unique sans remplacement des photos existantes.
+- Correction : valeur Excel initiale affichée explicitement au survol et au focus des cases modifiées.
+- Validation : 67 tests automatiques, packaging macOS et contrôle dans l’application. Windows reste à fabriquer et recetter.
+
 Toutes les évolutions significatives de Bruno Pizza sont consignées ici.
 
 ## V2 en préparation — non publiée — état au 1er octobre 2026

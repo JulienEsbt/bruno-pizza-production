@@ -1,9 +1,10 @@
 # V2 — état actuel et recette restante
 
-**Mise à jour : 2 octobre 2026. V2 développée localement, non publiée.**
-La V2 désigne le chantier fonctionnel demandé après la V1 ; aucun nouveau numéro
-de paquet n'a été choisi. La racine reste en 1.1.4, les sous-paquets frontend et
-backend en 1.1.2. Ne pas interpréter ces numéros comme une livraison de la V2.
+**Mise à jour : 2 octobre 2026. Paquet 1.2.0 préparé pour la recette Windows.**
+La V2 désigne le chantier fonctionnel demandé après la V1. Le paquet desktop
+passe en 1.2.0 ; les sous-paquets internes frontend/backend restent en 1.1.2.
+Le push et la fabrication Windows avec photos de démonstration sont autorisés.
+La fabrication ne constitue pas une validation sur le poste Windows de cuisine.
 
 ## Fonctionnalités en place
 

@@ -6,7 +6,8 @@ Windows sur le poste de cuisine après fabrication de l'installateur.
 
 ## Préparer le test
 
-- [ ] Ouvrir la V2 locale habituelle sur http://localhost:5173. Si nécessaire,
+- [ ] Ouvrir l’application desktop de test. Pour la variante navigateur seulement,
+  ouvrir http://localhost:5173. Si nécessaire,
   lancer `npm run dev:backend` et `npm run dev:frontend` depuis la racine du dépôt.
 - [ ] Utiliser le fichier de Corentin « Tableau de production - 2026-09-30.xlsx ».
   L'import remplace le tableau actuel : relever auparavant les corrections à garder.
@@ -14,7 +15,8 @@ Windows sur le poste de cuisine après fabrication de l'installateur.
   Attention : celui-ci isole le tableau, mais partage le catalogue et les photos
   s'il pointe vers le même backend. Faire les essais de retrait sur une pizza de test.
 - [ ] Les quatre photos fictives sont sur la Reine de la base de développement.
-  Elles ne sont pas la recette officielle et ne sont pas incluses dans Git.
+  Elles ne sont pas la recette officielle. Elles sont versionnées et intégrées
+  uniquement aux builds de test lorsque l’option de démonstration est activée.
 
 ## 1. Import réel et kits
 
@@ -126,3 +128,7 @@ d'écran et zoom. Un simple « blocs 1 à 5 OK, souci au 6 sur … » suffit pou
 
 **Statut : recette manuelle à réaliser.** Les tests automatiques et l'import
 programmatique ne remplacent pas cette validation ni celle du poste de cuisine.
+
+## Complément — application de test avec photos intégrées (2 octobre 2026)
+
+Le build macOS de démonstration ajoute automatiquement les quatre images à la Reine. Si une photo existait déjà, elle est conservée en dernière position : cinq images dans la session macOS vérifiée. Voir [Photos de démonstration](PHOTOS_DEMO_V2.md) pour l’option Windows et le contrôle de non-réapparition après suppression. Sur une case corrigée, le survol ou le focus clavier montre explicitement `Excel : valeur initiale → valeur actuelle`.

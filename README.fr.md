@@ -21,7 +21,7 @@ propose trois espaces complémentaires :
 - un **parcours atelier** avec recette, photo, progression et navigation ;
 - des **paramètres métier** pour gérer pizzas, ingrédients et distributeurs.
 
-La version 1.1.4 fonctionne entièrement en local. Excel reste l’unique source
+L’application fonctionne entièrement en local. Excel reste l’unique source
 de production ; l’intégration Adial n’entre pas encore dans son périmètre.
 
 ## V2 en préparation — non publiée
