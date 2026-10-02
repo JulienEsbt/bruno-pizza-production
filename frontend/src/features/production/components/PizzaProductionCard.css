@@ -374,6 +374,32 @@
     font-size: 1.4rem;
 }
 
+.production-sequence__preview--next {
+    min-height: 112px;
+    grid-template-columns: minmax(0, 1fr) minmax(3ch, auto);
+    border-color: color-mix(in srgb, var(--panel-accent), var(--border) 45%);
+}
+
+.production-sequence__preview--next small {
+    font-size: clamp(1rem, 1.2vw, 1.35rem);
+    color: var(--app-text);
+}
+
+.production-sequence__preview--next > span {
+    overflow-wrap: anywhere;
+    white-space: normal;
+    font-size: clamp(1.15rem, 1.65vw, 1.9rem);
+    line-height: 1.1;
+}
+
+.production-sequence__preview--next > strong {
+    font-size: clamp(2.75rem, 4.3vw, 4.75rem);
+    font-weight: 950;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    text-align: right;
+}
+
 .production-recipe__count {
     display: grid;
     place-items: center;
@@ -622,3 +648,38 @@
         grid-column: auto;
     }
 }
+
+/* Keep the current quantity visible alongside the enlarged next-pizza card. */
+@media (max-height: 760px) and (min-width: 1051px) {
+    .production-sequence__current { padding: 8px 12px; gap: 8px; }
+    .production-sequence__live { padding: 3px 8px; font-size: .7rem; }
+    .production-sequence__current h1 { font-size: clamp(1.7rem, 2.6vw, 2.2rem); }
+    .production-sequence__quantity { padding: 6px 12px; }
+    .production-sequence__quantity strong { font-size: clamp(2.4rem, 3.3vw, 3rem); }
+    .production-sequence__preview--previous { min-height: 50px; padding: 6px 12px; }
+}
+
+/* Integrated next-pizza footer: label and name at left, large count at right. */
+.production-sequence__preview--next {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-content: center;
+    gap: 5px 18px;
+    margin: 0;
+    padding: 14px 20px;
+    min-height: 124px;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--panel-accent) 10%, var(--surface-subtle)), var(--surface-subtle));
+}
+.production-sequence__preview--next small {
+    grid-column: 1;
+    grid-row: 1;
+    justify-content: flex-start;
+    font-size: clamp(1rem, 1.35vw, 1.3rem);
+    color: var(--panel-accent);
+}
+.production-sequence__preview--next > span { grid-column: 1; grid-row: 2; font-size: clamp(1.5rem, 2.15vw, 2.5rem); font-weight: 900; }
+.production-sequence__preview--next > strong { grid-column: 2; grid-row: 1 / 3; align-self: center; text-align: center; font-size: clamp(3.5rem, 5.3vw, 5.75rem); }

@@ -59,7 +59,7 @@
 
 .production-distributor {
     display: grid;
-    grid-template-columns: minmax(74px, auto) 64px;
+    grid-template-columns: minmax(74px, auto) minmax(64px, max-content);
     min-width: 148px;
     overflow: hidden;
     background: var(--surface-subtle);
