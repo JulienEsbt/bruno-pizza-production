@@ -11,8 +11,7 @@ export type SettingsShortcutAction =
 export type ProductionCompleteShortcutAction =
     | "restart"
     | "dashboard"
-    | "close"
-    | "theme";
+    | "close";
 
 const SETTINGS_SHORTCUTS_BY_CODE: Record<
     string,
@@ -56,7 +55,6 @@ const PRODUCTION_COMPLETE_SHORTCUTS_BY_KEY: Record<
     backspace: "restart",
     enter: "dashboard",
     escape: "close",
-    t: "theme",
 };
 
 export const resolveProductionCompleteShortcut = (

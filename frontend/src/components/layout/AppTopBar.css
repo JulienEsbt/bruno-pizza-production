@@ -2,7 +2,7 @@
     --topbar-height: 84px;
     display: grid;
     grid-template-columns:
-        max-content minmax(0, 1fr) max-content 176px;
+        max-content minmax(0, 1fr) max-content;
     align-items: stretch;
     gap: 10px;
     width: 100%;
@@ -21,16 +21,14 @@
 
 .bp-topbar__left,
 .bp-topbar__center,
-.bp-topbar__actions,
-.bp-topbar__theme {
+.bp-topbar__actions {
     min-width: 0;
     min-height: 0;
 }
 
 .bp-topbar__left,
 .bp-topbar__center,
-.bp-topbar__actions,
-.bp-topbar__theme {
+.bp-topbar__actions {
     display: flex;
     align-items: stretch;
 }
@@ -58,18 +56,9 @@
     min-width: 58px;
 }
 
-.bp-topbar__theme {
-    width: 176px;
-    justify-self: end;
-}
-
-.bp-topbar__theme > * {
-    width: 100%;
-}
-
 .bp-topbar--production {
     grid-template-columns:
-        176px minmax(0, 1fr) 176px;
+        176px minmax(0, 1fr);
 }
 
 .bp-topbar--production
@@ -120,7 +109,7 @@
 @media (max-width: 1050px) {
     .bp-topbar {
         grid-template-columns:
-            minmax(0, 1fr) auto 176px;
+            minmax(0, 1fr) auto;
         grid-template-rows: 64px auto;
         height: auto;
     }
@@ -133,10 +122,6 @@
         grid-area: 1 / 2;
     }
 
-    .bp-topbar__theme {
-        grid-area: 1 / 3;
-    }
-
     .bp-topbar__center {
         grid-area: 2 / 1 / 3 / -1;
         min-height: 64px;
@@ -146,7 +131,7 @@
 @media (max-width: 680px) {
     .bp-topbar {
         grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-rows: auto 62px auto;
+        grid-template-rows: auto auto;
         padding: 9px;
     }
 
@@ -158,13 +143,8 @@
         grid-area: 1 / 2;
     }
 
-    .bp-topbar__theme {
-        grid-area: 2 / 1 / 3 / -1;
-        width: 100%;
-    }
-
     .bp-topbar__center {
-        grid-area: 3 / 1 / 4 / -1;
+        grid-area: 2 / 1 / 3 / -1;
     }
 
     .app-page-heading {

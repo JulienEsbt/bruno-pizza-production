@@ -38,10 +38,6 @@ const DASHBOARD_SHORTCUTS = [
         key: "Suppr",
         label: "Vider",
     },
-    {
-        key: "T",
-        label: "Thème",
-    },
 ] satisfies KeyboardShortcutItem[];
 
 export default function DashboardView() {

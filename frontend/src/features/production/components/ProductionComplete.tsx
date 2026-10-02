@@ -32,10 +32,6 @@ const PRODUCTION_COMPLETE_SHORTCUTS = [
         key: "Échap",
         label: "Fermer",
     },
-    {
-        key: "T",
-        label: "Thème",
-    },
 ] satisfies KeyboardShortcutItem[];
 
 export default function ProductionComplete({

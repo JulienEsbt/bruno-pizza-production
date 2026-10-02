@@ -26,10 +26,6 @@ const PRODUCTION_SHORTCUTS = [
         key: "P",
         label: "Paramètres",
     },
-    {
-        key: "T",
-        label: "Thème",
-    },
 ] satisfies KeyboardShortcutItem[];
 
 export default function ProductionNavigation({

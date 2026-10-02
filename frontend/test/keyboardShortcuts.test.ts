@@ -61,7 +61,7 @@ test("associe les raccourcis de fin de production", () => {
     );
     assert.equal(
         resolveProductionCompleteShortcut("T"),
-        "theme",
+        null,
     );
     assert.equal(
         resolveProductionCompleteShortcut("x"),

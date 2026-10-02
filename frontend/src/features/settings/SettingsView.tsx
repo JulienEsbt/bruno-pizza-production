@@ -55,10 +55,6 @@ const SETTINGS_SHORTCUTS = [
         key: "F",
         label: "Recherche",
     },
-    {
-        key: "T",
-        label: "Thème",
-    },
 ] satisfies KeyboardShortcutItem[];
 
 export default function SettingsView() {

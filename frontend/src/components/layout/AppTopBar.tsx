@@ -2,8 +2,6 @@ import type {
     ReactNode,
 } from "react";
 
-import GlobalThemeSwitch from "../theme/GlobalThemeSwitch";
-
 import "./AppTopBar.css";
 
 interface AppTopBarProps {
@@ -35,10 +33,6 @@ export default function AppTopBar({
 
             <div className="bp-topbar__actions">
                 {actions}
-            </div>
-
-            <div className="bp-topbar__theme">
-                <GlobalThemeSwitch />
             </div>
         </header>
     );

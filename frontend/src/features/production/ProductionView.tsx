@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 
 import { useProduction } from "../../hooks/useProduction";
 import { useSettings } from "../../hooks/useSettings";
-import { useTheme } from "../../hooks/useTheme";
 import {
     canUseAppShortcut,
     resolveProductionCompleteShortcut,
@@ -76,7 +75,6 @@ export default function ProductionView() {
     const navigate = useNavigate();
     const { production } = useProduction();
     const { settings } = useSettings();
-    const { toggleTheme } = useTheme();
 
     const pizzas = useMemo(
         () =>
@@ -295,9 +293,6 @@ export default function ProductionView() {
                     case "close":
                         setIsCompletionOpen(false);
                         break;
-                    case "theme":
-                        toggleTheme();
-                        break;
                 }
 
                 return;
@@ -349,7 +344,6 @@ export default function ProductionView() {
         isCompletionOpen,
         isLastPizza,
         navigate,
-        toggleTheme,
     ]);
 
     if (!currentPizza || pizzas.length === 0) {
