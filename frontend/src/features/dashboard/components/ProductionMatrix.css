@@ -569,3 +569,25 @@
 .quantity-editor input { width: 4ch; min-width: 0; padding: 2px 0; border: 1px solid transparent; border-radius: 4px; text-align: center; color: inherit; background: transparent; font: inherit; font-size: clamp(1.1rem, 1.8vw, 1.8rem); }
 .quantity-editor input:focus { background: var(--surface); border-color: var(--primary); }
 .quantity-editor :focus-visible { outline: 2px solid #fbbf24; outline-offset: 1px; }
+
+/* Keep the original value inside the cell so the scroll container cannot clip it. */
+.production-matrix__original-quantity {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #182337;
+    color: #fbbf24;
+    font-size: 12px;
+    line-height: 1.2;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    visibility: hidden;
+}
+.production-matrix__quantity--modified:hover .production-matrix__original-quantity,
+.production-matrix__quantity--modified:focus-within .production-matrix__original-quantity { visibility: visible; }
+.production-matrix--editing .production-matrix__quantity--modified { padding-bottom: 22px; min-height: 60px; }

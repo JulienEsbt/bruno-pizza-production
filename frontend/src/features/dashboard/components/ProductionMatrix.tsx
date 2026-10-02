@@ -472,7 +472,8 @@ export default function ProductionMatrix({
                                         const label = `${formatPizzaDisplayName(pizza.name)} / ${distributor.shortName}`;
                                         return (
                                             <td
-                                                title={modified ? `Quantité Excel : ${cell.originalQuantity} → ${quantity}` : undefined}
+                                                tabIndex={modified && !isEditing ? 0 : undefined}
+                                                aria-label={modified ? `${label}, quantité ${quantity}, quantité Excel initiale ${cell.originalQuantity}` : undefined}
                                                 className={[
                                                     "production-matrix__quantity",
                                                     modified ? "production-matrix__quantity--modified" : "",
@@ -506,6 +507,9 @@ export default function ProductionMatrix({
                                                     onChange={(value) => onQuantityChange(pizza.id, distributor.id, value)} /> : quantity}
                                                 {modified && <span className="production-matrix__modified-marker"
                                                     role="img" aria-label={`Case corrigée, quantité Excel : ${cell.originalQuantity}`}>●</span>}
+                                                {modified && <span className="production-matrix__original-quantity" aria-hidden="true">
+                                                    Excel : {cell.originalQuantity} → {quantity}
+                                                </span>}
                                             </td>
                                         );
                                     },
