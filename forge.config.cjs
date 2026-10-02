@@ -23,6 +23,7 @@ module.exports = {
         overwrite: true,
         prune: true,
         ignore: [
+            ...(process.env.BRUNO_DEMO_PHOTOS === "1" ? [] : [/^\/desktop\/demo-images(?:\/|$)/]),
             /^\/\.git(?:\/|$)/,
             /^\/\.github(?:\/|$)/,
             /^\/\.idea(?:\/|$)/,

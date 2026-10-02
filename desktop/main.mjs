@@ -81,6 +81,18 @@ const startBackend = async () => {
     });
 };
 
+const installPackagedDemoPhotos = async () => {
+    if (!app.isPackaged) return;
+    const { installDemoPhotos } = await import("./demoPhotos.mjs");
+    const { findPizzaImages, savePizzaImages } = await import("../backend/dist/services/pizzaImageService.js");
+    try {
+        installDemoPhotos({ appPath: app.getAppPath(), userDataPath: app.getPath("userData"), findPizzaImages, savePizzaImages });
+    } catch (error) {
+        // An optional demonstration must not prevent access to production data.
+        console.warn("Photos de démonstration non installées :", error);
+    }
+};
+
 const registerDesktopProtocol = async () => {
     await protocol.handle(
         DESKTOP_SCHEME,
@@ -232,6 +244,7 @@ const bootApplication = async () => {
     );
 
     await startBackend();
+    await installPackagedDemoPhotos();
     await registerDesktopProtocol();
     await createMainWindow();
 };
