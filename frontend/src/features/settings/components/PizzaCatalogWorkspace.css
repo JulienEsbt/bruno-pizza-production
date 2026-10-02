@@ -617,33 +617,6 @@
         );
 }
 
-.pizza-editor-photo
-    .pizza-image-editor {
-    grid-template-rows:
-        minmax(120px, 1fr)
-        auto;
-    grid-template-columns: 1fr;
-    min-height: 0;
-}
-
-.pizza-editor-photo
-    .pizza-image-editor__preview {
-    min-height: 120px;
-    height: 100%;
-}
-
-.pizza-editor-photo
-    .pizza-image-editor__preview
-    img {
-    height: 100%;
-    min-height: 120px;
-}
-
-.pizza-editor-photo
-    .pizza-image-editor__error {
-    grid-column: auto;
-}
-
 .pizza-editor-order-hint {
     flex: 0 0 auto;
     color: var(--primary);

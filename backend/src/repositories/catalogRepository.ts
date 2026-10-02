@@ -105,10 +105,8 @@ export const getCatalogFromDatabase = (): Catalog => {
                 pizzas.display_order,
                 pizzas.active,
                 pizzas.configured,
-                pizza_images.updated_at AS image_updated_at
+                (SELECT MAX(updated_at) FROM pizza_images WHERE pizza_id = pizzas.id) AS image_updated_at
             FROM pizzas
-            LEFT JOIN pizza_images
-                ON pizza_images.pizza_id = pizzas.id
             ORDER BY
                 pizzas.display_order,
                 pizzas.name COLLATE NOCASE

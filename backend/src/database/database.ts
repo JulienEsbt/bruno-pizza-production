@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
+import { migratePizzaImages } from "./pizzaImageMigration.js";
 import { config } from "../config.js";
 import { INGREDIENTS_SEED } from "../data/seed/ingredients.seed.js";
 import { PIZZA_INGREDIENTS_SEED } from "../data/seed/pizzaIngredients.seed.js";
@@ -468,6 +469,7 @@ const seedDistributorsIfEmpty = (): void => {
 
 export const initializeDatabase = (): void => {
     createSchema();
+    migratePizzaImages(database, `${config.databasePath}.before-gallery-v2-${Date.now()}.sqlite`);
     migrateDistributorSchema();
     migrateDistributorExcelNames();
     migrateLegacyPizzaDefaults();

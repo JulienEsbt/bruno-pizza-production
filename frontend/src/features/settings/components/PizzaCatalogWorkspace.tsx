@@ -762,8 +762,7 @@ export default function PizzaCatalogWorkspace({
                                         production
                                     </strong>
                                     <small>
-                                        Photo affichée pendant
-                                        la fabrication
+                                        Photos des étapes de montage
                                     </small>
                                 </div>
                             </header>
@@ -775,17 +774,6 @@ export default function PizzaCatalogWorkspace({
                                 }
                                 pizzaName={
                                     selectedPizza.name
-                                }
-                                initialHasImage={
-                                    imageVersions[
-                                        selectedPizza.id
-                                    ] === undefined
-                                        ? Boolean(
-                                              selectedPizza.imageUpdatedAt,
-                                          )
-                                        : imageVersions[
-                                              selectedPizza.id
-                                          ] !== null
                                 }
                                 onImageChange={(
                                     version,

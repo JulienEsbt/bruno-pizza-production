@@ -1,10 +1,6 @@
-import { useState } from "react";
+import PizzaVisual from "./PizzaVisual";
 
 import type { PizzaProduction } from "../../../types/production";
-
-import {
-    getPizzaImageUrl,
-} from "../../settings/services/pizzaImageApi";
 
 import {
     normalizeIngredientName,
@@ -20,62 +16,6 @@ interface PizzaProductionCardProps {
     currentIndex: number;
     totalPizzas: number;
     catalogPizzaId?: string;
-}
-
-interface PizzaVisualProps {
-    catalogPizzaId?: string;
-    pizzaName: string;
-}
-
-function PizzaVisual({
-    catalogPizzaId,
-    pizzaName,
-}: PizzaVisualProps) {
-    const [hasImageError, setHasImageError] =
-        useState(!catalogPizzaId);
-
-    return (
-        <section className="production-visual">
-            <header className="production-panel-heading">
-                <div>
-                    <span>Contrôle visuel</span>
-                    <h2>Visuel de la pizza</h2>
-                </div>
-
-                <strong aria-hidden="true">◉</strong>
-            </header>
-
-            <div className="production-visual__content">
-                {catalogPizzaId && !hasImageError && (
-                    <img
-                        className="production-visual__image"
-                        src={getPizzaImageUrl(
-                            catalogPizzaId,
-                        )}
-                        alt={`Photo de ${normalizePizzaName(
-                            pizzaName,
-                        )}`}
-                        onError={() =>
-                            setHasImageError(true)
-                        }
-                    />
-                )}
-
-                {hasImageError && (
-                    <div className="production-visual__fallback">
-                        <div className="production-visual__placeholder">
-                            <span aria-hidden="true">◎</span>
-                        </div>
-                        <strong>Photo à configurer</strong>
-                        <small>
-                            Aucune photo n’est configurée
-                            pour cette pizza.
-                        </small>
-                    </div>
-                )}
-            </div>
-        </section>
-    );
 }
 
 export default function PizzaProductionCard({

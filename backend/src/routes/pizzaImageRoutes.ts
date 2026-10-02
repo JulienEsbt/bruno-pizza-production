@@ -9,21 +9,19 @@ import multer from "multer";
 
 import {
     deletePizzaImage,
+    findPizzaImages, savePizzaImages, reorderPizzaImages, MAX_IMAGE_SIZE, MAX_PIZZA_IMAGES,
     findPizzaImage,
     getPizzaImageFilePath,
     PizzaImageError,
     savePizzaImage,
 } from "../services/pizzaImageService.js";
 
-const MAX_IMAGE_SIZE =
-    8 * 1024 * 1024;
-
 const upload = multer({
     storage: multer.memoryStorage(),
 
     limits: {
         fileSize: MAX_IMAGE_SIZE,
-        files: 1,
+        files: MAX_PIZZA_IMAGES,
     },
 
     fileFilter: (
@@ -78,6 +76,10 @@ const sendImageError = (
         return;
     }
 
+    if (error instanceof multer.MulterError) {
+        response.status(400).json({error: "Trop de fichiers ou champ d’envoi invalide (20 images maximum)."});
+        return;
+    }
     if (error instanceof PizzaImageError) {
         response.status(error.status).json({
             error: error.message,
@@ -210,3 +212,43 @@ pizzaImageRouter.delete(
         }
     },
 );
+
+// Public metadata never exposes the internal storage filename.
+const galleryResponse = (pizzaId: string) => findPizzaImages(pizzaId).map(({filename: _filename, ...image}) => image);
+
+pizzaImageRouter.get("/:pizzaId/images", (request, response) => {
+    try {
+        response.setHeader("Cache-Control", "no-store");
+        response.json(galleryResponse(request.params.pizzaId));
+    } catch (error) { sendImageError(response, error); }
+});
+pizzaImageRouter.get("/:pizzaId/images/:imageId", (request, response) => {
+    try {
+        const image = findPizzaImages(request.params.pizzaId).find((item) => item.id === request.params.imageId);
+        if (!image || !fs.existsSync(getPizzaImageFilePath(image))) throw new PizzaImageError("Image introuvable.", 404);
+        response.setHeader("Content-Type", image.mimeType);
+        response.setHeader("Cache-Control", "private, no-cache");
+        response.sendFile(getPizzaImageFilePath(image));
+    } catch (error) { sendImageError(response, error); }
+});
+pizzaImageRouter.post("/:pizzaId/images", (request, response) => {
+    upload.array("images", MAX_PIZZA_IMAGES)(request, response, (error) => {
+        if (error) { sendImageError(response, error); return; }
+        try {
+            savePizzaImages(request.params.pizzaId, Array.isArray(request.files) ? request.files : []);
+            response.status(201).json(galleryResponse(request.params.pizzaId));
+        } catch (saveError) { sendImageError(response, saveError); }
+    });
+});
+pizzaImageRouter.put("/:pizzaId/images/order", (request, response) => {
+    try {
+        reorderPizzaImages(request.params.pizzaId, request.body?.imageIds);
+        response.json(galleryResponse(request.params.pizzaId));
+    } catch (error) { sendImageError(response, error); }
+});
+pizzaImageRouter.delete("/:pizzaId/images/:imageId", (request, response) => {
+    try {
+        deletePizzaImage(request.params.pizzaId, request.params.imageId);
+        response.json(galleryResponse(request.params.pizzaId));
+    } catch (error) { sendImageError(response, error); }
+});
