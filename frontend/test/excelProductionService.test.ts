@@ -119,3 +119,63 @@ test("contrôle le nom et la taille du fichier", () => {
         /5 Mo/,
     );
 });
+
+test("exclut les kits avant les totaux sans masquer les autres recettes", () => {
+    const production = parseProductionRows(
+        [
+            ["30/09/2026 05:33"],
+            ["Pizza", "INTER 2194", "Total"],
+            ["KIT Pizza", 2, 2],
+            ["REINE", 3, 3],
+            ["  Kits-Pizzas  ", 1, 1],
+            ["NOUVELLE RECETTE", 4, 4],
+            ["PIZZA KITKAT", 1, 1],
+            ["Total", 11, 11],
+        ],
+        "avec-kits.xlsx",
+    );
+
+    assert.deepEqual(
+        production.pizzas.map(({ name }) => name),
+        ["REINE", "NOUVELLE RECETTE", "PIZZA KITKAT"],
+    );
+    assert.equal(
+        production.pizzas.reduce((sum, pizza) => sum + pizza.quantity, 0),
+        8,
+    );
+    assert.equal(
+        production.pizzas.flatMap((pizza) => pizza.distributors)
+            .reduce((sum, distributor) => sum + distributor.quantity, 0),
+        8,
+    );
+});
+
+test("importe une journée sans pizza si le fichier ne contient que des kits", () => {
+    const production = parseProductionRows(
+        [
+            ["30/09/2026 05:33"],
+            ["Pizza", "INTER 2194", "Total"],
+            ["KIT Pizza", 2, 2],
+            ["Total", 2, 2],
+        ],
+        "kits-seuls.xlsx",
+    );
+
+    assert.equal(production.source, "excel");
+    assert.equal(production.date, "30 septembre 2026");
+    assert.equal(production.sourceFileName, "kits-seuls.xlsx");
+    assert.deepEqual(production.pizzas, []);
+});
+
+test("un kit n'empêche pas la validation des quantités des pizzas", () => {
+    assert.throws(() => parseProductionRows(
+        [
+            ["30/09/2026 05:33"],
+            ["Pizza", "INTER 2194", "Total"],
+            ["KIT Pizza", 2, 2],
+            ["REINE", 2, 3],
+            ["Total", 4, 5],
+        ],
+        "incoherent.xlsx",
+    ), /incohérentes/);
+});

@@ -4,6 +4,8 @@ import type {
     ProductionDay,
 } from "../../../types/production";
 
+import { isPizzaKit } from "../domain/productionItems.ts";
+
 const PRODUCTION_SHEET_NAME =
     "Répartition générale par distri";
 
@@ -300,6 +302,7 @@ export const parseProductionRows = (
 
     const pizzaNames = new Set<string>();
     const pizzas: PizzaProduction[] = [];
+    let hasKitRows = false;
 
     for (
         let rowIndex = headerRowIndex + 1;
@@ -322,6 +325,11 @@ export const parseProductionRows = (
 
         const normalizedPizzaName =
             normalizeIdentifier(pizzaName);
+
+        if (isPizzaKit(pizzaName)) {
+            hasKitRows = true;
+            continue;
+        }
 
         if (
             !normalizedPizzaName ||
@@ -353,15 +361,11 @@ export const parseProductionRows = (
                     `La quantité « ${pizzaName} / ${distributorName} »`,
                 );
 
-                if (quantity > 0) {
-                    distributors.push({
-                        id: normalizeIdentifier(
-                            distributorName,
-                        ),
-                        name: distributorName,
-                        quantity,
-                    });
-                }
+                distributors.push({
+                    id: normalizeIdentifier(distributorName),
+                    name: distributorName,
+                    quantity,
+                });
             },
         );
 
@@ -394,7 +398,7 @@ export const parseProductionRows = (
         }
     }
 
-    if (pizzas.length === 0) {
+    if (pizzas.length === 0 && !hasKitRows) {
         throw new Error(
             "Aucune pizza à produire n’a été trouvée dans le fichier.",
         );
