@@ -149,6 +149,11 @@ export default function ExcelImportButton({
                                 }
                             </p>
                         </>
+                    ) : importReport?.importedPizzaCount === 0 ? (
+                        <>
+                            <strong>Aucune pizza à produire</strong>
+                            <p>Les kits pizza sont exclus. La production précédente a été remplacée.</p>
+                        </>
                     ) : importReport ? (
                         <>
                             <strong>

@@ -308,7 +308,7 @@
                 transparent 83%
             ),
             var(--primary-soft)
-        ) !important;
+        ), var(--surface) !important;
     font-size: 2.25rem !important;
 }
 
@@ -532,7 +532,7 @@
                 transparent 84%
             ),
             var(--primary-soft)
-        );
+        ), var(--surface);
     font-size: 2.55rem;
 }
 
@@ -553,3 +553,19 @@
         min-height: 480px;
     }
 }
+
+/* Preserve a usable editor at kitchen-screen sizes; scroll smaller screens. */
+.production-matrix--editing table { grid-template-columns: minmax(235px, 24%) 94px repeat(var(--production-matrix-distributor-count), minmax(126px, 1fr)); }
+.production-matrix--editing .production-matrix__scroll { overflow-y: auto; }
+.production-matrix--editing td.production-matrix__quantity { padding: 4px 6px; min-height: 40px; }
+.production-matrix__quantity { position: relative; }
+.production-matrix__quantity--modified { outline: 2px solid #fbbf24; outline-offset: -3px; }
+.production-matrix__modified-marker { position: absolute; top: 5px; right: 5px; color: #fbbf24; font-size: 10px; pointer-events: none; }
+.production-matrix--editing .production-matrix__quantity--zero,
+.production-matrix__quantity--modified.production-matrix__quantity--zero { opacity: 1; }
+.quantity-editor { display: flex; align-items: center; justify-content: center; gap: 3px; width: 100%; }
+.quantity-editor button { flex: 0 0 28px; height: 30px; padding: 0; border: 1px solid var(--border); border-radius: 6px; color: var(--app-text); background: var(--surface-subtle); font-size: 20px; cursor: pointer; }
+.quantity-editor button:disabled { opacity: .35; cursor: default; }
+.quantity-editor input { width: 4ch; min-width: 0; padding: 2px 0; border: 1px solid transparent; border-radius: 4px; text-align: center; color: inherit; background: transparent; font: inherit; font-size: clamp(1.1rem, 1.8vw, 1.8rem); }
+.quantity-editor input:focus { background: var(--surface); border-color: var(--primary); }
+.quantity-editor :focus-visible { outline: 2px solid #fbbf24; outline-offset: 1px; }

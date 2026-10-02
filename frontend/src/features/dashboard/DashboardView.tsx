@@ -2,6 +2,7 @@ import {
     useCallback,
     useEffect,
     useMemo,
+    useState,
 } from "react";
 import {
     useNavigate,
@@ -31,6 +32,10 @@ import "./DashboardView.css";
 const CATALOG_ROUTE = "/parametres";
 const DASHBOARD_SHORTCUTS = [
     {
+        key: "E",
+        label: "Modifier",
+    },
+    {
         key: "I",
         label: "Importer",
     },
@@ -52,7 +57,10 @@ export default function DashboardView() {
     const {
         production,
         resetProduction,
+        updateQuantity, resetChanges, changeCount, storageError,
     } = useProduction();
+
+    const [isEditing, setIsEditing] = useState(false);
 
     const orderedPizzas = useMemo(
         () =>
@@ -92,11 +100,19 @@ export default function DashboardView() {
         [orderedPizzas],
     );
 
-    const hasProduction =
-        orderedPizzas.length > 0;
+    const otherBaseQuantity = productionTotals.total - productionTotals.tomato - productionTotals.cream;
 
-    const sourceLabel = hasProduction
-        ? "Fichier Excel"
+    const hasProduction =
+        orderedPizzas.some((pizza) => pizza.quantity > 0);
+    const hasSource = production.source === "excel";
+    const canEdit = orderedPizzas.length > 0 && !excelImporter.isImporting;
+    const editingActive = isEditing && orderedPizzas.length > 0;
+    const toggleEditing = useCallback(() => {
+        if (canEdit) setIsEditing((current) => !current);
+    }, [canEdit]);
+
+    const sourceLabel = production.source === "excel"
+        ? (changeCount > 0 ? `Excel · ${changeCount} case${changeCount > 1 ? "s" : ""} modifiée${changeCount > 1 ? "s" : ""}` : "Fichier Excel")
         : "Aucune source";
 
     const handleResetProduction = useCallback(() => {
@@ -109,20 +125,26 @@ export default function DashboardView() {
         }
 
         resetProduction();
+        setIsEditing(false);
     }, [resetProduction]);
 
     useEffect(() => {
         const handleKeyDown = (
             event: KeyboardEvent,
         ) => {
-            if (!canUseAppShortcut(event)) {
+            // E remains usable after clicking an action, but never while typing a quantity.
+            const key = event.key.toLocaleLowerCase("fr-FR");
+            const isButtonTarget = event.target instanceof HTMLElement && Boolean(event.target.closest("button"));
+            if (key === "e" && !event.repeat && !event.isComposing && !event.defaultPrevented && canEdit &&
+                canUseAppShortcut(event, {allowInteractiveTarget: isButtonTarget})) {
+                event.preventDefault();
+                toggleEditing();
                 return;
             }
 
-            const key =
-                event.key.toLocaleLowerCase(
-                    "fr-FR",
-                );
+            if (excelImporter.isImporting || !canUseAppShortcut(event)) {
+                return;
+            }
 
             if (
                 event.key === "Enter" &&
@@ -141,7 +163,7 @@ export default function DashboardView() {
 
             if (
                 event.key === "Delete" &&
-                hasProduction
+                hasSource
             ) {
                 event.preventDefault();
                 handleResetProduction();
@@ -160,8 +182,12 @@ export default function DashboardView() {
             );
         };
     }, [
+        canEdit,
+        toggleEditing,
         handleResetProduction,
         hasProduction,
+        hasSource,
+        excelImporter.isImporting,
         navigate,
     ]);
 
@@ -170,6 +196,23 @@ export default function DashboardView() {
             <div className="dashboard__screen">
                 <section className="dashboard__header-area">
                     <DashboardHeader
+                        actions={<div className="dashboard-edit-controls">
+                            {changeCount > 0 && <button type="button" className="dashboard-edit-controls__reset"
+                                disabled={excelImporter.isImporting}
+                                onClick={() => {
+                                    if (window.confirm("Annuler toutes les corrections et retrouver les quantités du fichier Excel ?")) resetChanges();
+                                }}>Rétablir l’Excel</button>}
+                            <AppBottomBarAction className="dashboard-edit-controls__toggle"
+                                icon={editingActive ? "✓" : "✎"}
+                                label={editingActive ? "Terminer l’édition" : "Modifier le tableau"}
+                                shortcut="E"
+                                hint={editingActive ? "Terminer" : "Éditer les quantités"}
+                                tone={editingActive ? "primary" : "default"}
+                                aria-pressed={editingActive}
+                                aria-keyshortcuts="E"
+                                disabled={!canEdit}
+                                onClick={toggleEditing} />
+                        </div>}
                         date={production.date}
                         updatedAt={
                             production.sourceUpdatedAt
@@ -243,6 +286,15 @@ export default function DashboardView() {
                         </article>
                     </div>
 
+                    {otherBaseQuantity > 0 && <p className="dashboard-base-notice" role="status">
+                        {otherBaseQuantity} pizza{otherBaseQuantity > 1 ? "s" : ""} avec une autre base ou une base non renseignée :
+                        {" "}incluse{otherBaseQuantity > 1 ? "s" : ""} dans le total général, hors totaux tomate / crème.
+                    </p>}
+                    {storageError && <div className="dashboard__api-error" role="alert">{storageError}</div>}
+                    {isEditing && orderedPizzas.length > 0 && <p className="dashboard-edit-help">
+                        Utilisez − / + ou saisissez une quantité. Enregistrement immédiat sur cet appareil.
+                        <span> ● Case corrigée · Le mode atelier reprend à la première pizza après une modification.</span>
+                    </p>}
                     {settingsError && (
                         <div
                             className="dashboard__api-error"
@@ -263,6 +315,8 @@ export default function DashboardView() {
                 <section className="dashboard__matrix-area">
                     <ProductionMatrix
                         pizzas={orderedPizzas}
+                        isEditing={isEditing}
+                        onQuantityChange={updateQuantity}
                         isImportDisabled={
                             excelImporter.isDisabled
                         }
@@ -287,7 +341,7 @@ export default function DashboardView() {
                         tone="danger"
                         aria-keyshortcuts="Delete"
                         onClick={handleResetProduction}
-                        disabled={!hasProduction}
+                        disabled={!hasSource || excelImporter.isImporting}
                     />
 
                     <ExcelImportButton
@@ -322,7 +376,7 @@ export default function DashboardView() {
                         onClick={() =>
                             navigate("/production")
                         }
-                        disabled={!hasProduction}
+                        disabled={!hasProduction || excelImporter.isImporting}
                     />
                 </AppBottomBar>
             </div>

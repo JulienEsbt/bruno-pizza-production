@@ -79,7 +79,7 @@ export default function ProductionView() {
     const pizzas = useMemo(
         () =>
             sortProductionPizzasByCatalog(
-                production.pizzas,
+                production.pizzas.filter((pizza) => pizza.quantity > 0),
                 settings.pizzas,
             ),
         [production.pizzas, settings.pizzas],
@@ -91,11 +91,13 @@ export default function ProductionView() {
                 "bruno-pizza-position-v2",
                 production.date,
                 production.importedAt,
+                production.revision ?? 0,
                 pizzas.map((pizza) => pizza.id).join("-"),
             ].join(":"),
         [
             production.date,
             production.importedAt,
+            production.revision,
             pizzas,
         ],
     );
@@ -383,7 +385,7 @@ export default function ProductionView() {
                     {currentPizza.distributors.length >
                     0 ? (
                         sortDistributors(
-                            currentPizza.distributors,
+                            currentPizza.distributors.filter((cell) => cell.quantity > 0),
                             settings.distributors,
                         ).map((distributor) => {
                             const presentation =

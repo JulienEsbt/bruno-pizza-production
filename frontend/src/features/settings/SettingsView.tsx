@@ -93,7 +93,7 @@ export default function SettingsView() {
 
     const normalizedSearch = normalizeSearch(search);
     const hasProduction =
-        production.pizzas.length > 0;
+        production.pizzas.some((pizza) => pizza.quantity > 0);
 
     const handleTabChange = useCallback(
         (tab: SettingsTab) => {

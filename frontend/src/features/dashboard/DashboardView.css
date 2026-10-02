@@ -326,3 +326,19 @@ kbd {
         margin-inline: 9px;
     }
 }
+
+/* Reuse the common 64 px action, including its icon and shortcut badge. */
+.dashboard-edit-controls { display: flex; align-items: stretch; gap: 10px; }
+.dashboard-edit-controls__toggle { width: 235px; flex-shrink: 0; }
+.dashboard-edit-controls__reset { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 9px 13px; color: var(--app-text); background: var(--surface-subtle); font: inherit; font-size: .86rem; font-weight: 700; cursor: pointer; }
+.dashboard-edit-controls__reset:disabled { opacity: .45; cursor: default; }
+.dashboard-edit-controls button:focus-visible { outline: 3px solid #fbbf24; outline-offset: 2px; }
+.dashboard-edit-help { margin: 0; padding: 2px 8px; color: var(--text-muted); font-size: .82rem; }
+.dashboard-edit-help span { color: #fbbf24; }
+@media (max-width: 680px) {
+    .dashboard-edit-controls { flex-wrap: wrap; justify-content: flex-end; }
+    .dashboard-edit-controls__reset { min-height: 44px; order: 1; }
+    .dashboard-edit-controls__toggle { width: 215px; }
+}
+
+.dashboard-base-notice { margin: 0; padding: 2px 14px; color: var(--text-muted); font-size: .78rem; }

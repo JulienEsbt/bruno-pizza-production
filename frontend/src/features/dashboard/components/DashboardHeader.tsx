@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import AppTopBar from "../../../components/layout/AppTopBar";
 
 import "./DashboardHeader.css";
@@ -5,6 +6,7 @@ import "./DashboardHeader.css";
 interface DashboardHeaderProps {
     date: string;
     updatedAt: string;
+    actions?: ReactNode;
 }
 
 const formatUpdatedAt = (
@@ -29,11 +31,13 @@ const formatUpdatedAt = (
 export default function DashboardHeader({
     date,
     updatedAt,
+    actions,
 }: DashboardHeaderProps) {
     const hasProductionData = Boolean(date);
 
     return (
         <AppTopBar
+            actions={actions}
             left={
                 <div className="app-page-heading">
                     <p className="app-page-heading__eyebrow">

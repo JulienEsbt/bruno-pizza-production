@@ -46,7 +46,7 @@ export const useExcelProductionImport =
         const inputRef = useRef<HTMLInputElement>(null);
         const importInFlightRef = useRef(false);
 
-        const { setProduction } = useProduction();
+        const { setProduction, getChangeCount } = useProduction();
         const {
             settings,
             isLoading: isCatalogLoading,
@@ -119,8 +119,10 @@ export const useExcelProductionImport =
                             settings,
                         );
 
-                    setProduction(result.production);
-                    setImportReport(result.report);
+                    if (getChangeCount() > 0 && !window.confirm(
+                        "Ce nouvel import remplacera toutes les corrections manuelles par les quantités du fichier Excel. Continuer ?",
+                    )) return;
+                    if (setProduction(result.production)) setImportReport(result.report);
                 } catch (error) {
                     setErrorMessage(
                         error instanceof Error
@@ -137,6 +139,7 @@ export const useExcelProductionImport =
                 clearFeedback,
                 isCatalogLoading,
                 setProduction,
+                getChangeCount,
                 settings,
             ],
         );

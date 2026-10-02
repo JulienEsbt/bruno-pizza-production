@@ -1,185 +1,63 @@
 /* eslint-disable react-refresh/only-export-components */
-
-import {
-    createContext,
-    type ReactNode,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
-
+import { createContext, type ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import type { ProductionDay } from "../types/production";
-
-const STORAGE_KEY = "bruno-pizza-production";
-const STORAGE_VERSION = 2;
-
-const createEmptyProduction = (): ProductionDay => ({
-    date: "",
-    sourceUpdatedAt: "",
-    importedAt: "",
-    sourceFileName: "",
-    source: "empty",
-    pizzas: [],
-});
+import {
+    createEmptyProduction, restoreProduction,
+    PRODUCTION_STORAGE_KEY as STORAGE_KEY,
+    PRODUCTION_STORAGE_VERSION as STORAGE_VERSION,
+} from "../features/production/domain/productionStorage";
+import {
+    countProductionChanges, resetProductionChanges, updateProductionQuantity,
+} from "../features/production/domain/productionEditing";
 
 interface ProductionContextValue {
     production: ProductionDay;
-    setProduction: (production: ProductionDay) => void;
+    setProduction: (production: ProductionDay) => boolean;
     resetProduction: () => void;
+    updateQuantity: (pizzaId: string, distributorId: string, quantity: number) => void;
+    resetChanges: () => void;
+    getChangeCount: () => number;
+    changeCount: number;
+    storageError: string | null;
 }
-
-export const ProductionContext =
-    createContext<ProductionContextValue | null>(null);
-
-interface ProductionProviderProps {
-    children: ReactNode;
-}
-
-const isStoredProductionValid = (
-    value: unknown,
-): value is ProductionDay => {
-    if (
-        typeof value !== "object" ||
-        value === null
-    ) {
-        return false;
-    }
-
-    const production =
-        value as Partial<ProductionDay>;
-
-    return (
-        typeof production.date === "string" &&
-        typeof production.sourceUpdatedAt === "string" &&
-        typeof production.importedAt === "string" &&
-        typeof production.sourceFileName === "string" &&
-        Array.isArray(production.pizzas) &&
-        production.source === "excel" &&
-        production.pizzas.every((pizza) => {
-            if (
-                typeof pizza !== "object" ||
-                pizza === null
-            ) {
-                return false;
-            }
-
-            const candidate =
-                pizza as Partial<
-                    ProductionDay["pizzas"][number]
-                >;
-
-            return (
-                typeof candidate.id === "string" &&
-                typeof candidate.name === "string" &&
-                typeof candidate.quantity === "number" &&
-                Number.isInteger(candidate.quantity) &&
-                candidate.quantity > 0 &&
-                Array.isArray(candidate.ingredients) &&
-                candidate.ingredients.every(
-                    (ingredient) =>
-                        typeof ingredient === "string",
-                ) &&
-                Array.isArray(candidate.distributors) &&
-                candidate.distributors.every(
-                    (distributor) =>
-                        typeof distributor === "object" &&
-                        distributor !== null &&
-                        typeof distributor.id === "string" &&
-                        typeof distributor.name === "string" &&
-                        typeof distributor.quantity ===
-                            "number" &&
-                        Number.isInteger(
-                            distributor.quantity,
-                        ) &&
-                        distributor.quantity > 0,
-                )
-            );
-        })
-    );
-};
-
-interface StoredProductionEnvelope {
-    version: number;
-    production: unknown;
-}
+export const ProductionContext = createContext<ProductionContextValue | null>(null);
 
 const loadStoredProduction = (): ProductionDay => {
-    try {
-        const storedProduction =
-            localStorage.getItem(STORAGE_KEY);
-
-        if (!storedProduction) {
-            return createEmptyProduction();
-        }
-
-        const parsedValue: unknown =
-            JSON.parse(storedProduction);
-
-        if (
-            typeof parsedValue !== "object" ||
-            parsedValue === null
-        ) {
-            localStorage.removeItem(STORAGE_KEY);
-            return createEmptyProduction();
-        }
-
-        const envelope =
-            parsedValue as Partial<StoredProductionEnvelope>;
-
-        if (
-            envelope.version !== STORAGE_VERSION ||
-            !isStoredProductionValid(envelope.production)
-        ) {
-            localStorage.removeItem(STORAGE_KEY);
-            return createEmptyProduction();
-        }
-
-        return envelope.production;
-    } catch {
-        localStorage.removeItem(STORAGE_KEY);
-        return createEmptyProduction();
-    }
+    try { return restoreProduction(localStorage.getItem(STORAGE_KEY)); }
+    catch { return createEmptyProduction(); }
 };
 
-export function ProductionProvider({
-    children,
-}: ProductionProviderProps) {
-    const [production, setProduction] =
-        useState<ProductionDay>(loadStoredProduction);
+export function ProductionProvider({children}: {children: ReactNode}) {
+    const [production, setState] = useState(loadStoredProduction);
+    const latestProduction = useRef(production);
+    const [storageError, setStorageError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (production.source === "empty") {
-            localStorage.removeItem(STORAGE_KEY);
-            return;
+    // Save before accepting a change: a full/unavailable storage must not look saved.
+    const commit = useCallback((update: (current: ProductionDay) => ProductionDay): boolean => {
+        const next = update(latestProduction.current);
+        if (next === latestProduction.current) return true;
+        try {
+            if (next.source === "empty") localStorage.removeItem(STORAGE_KEY);
+            else localStorage.setItem(STORAGE_KEY, JSON.stringify({version: STORAGE_VERSION, production: next}));
+        } catch {
+            setStorageError("Impossible d’enregistrer la modification sur cet appareil. Les quantités précédentes sont conservées. Libérez de l’espace puis réessayez.");
+            return false;
         }
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({
-                version: STORAGE_VERSION,
-                production,
-            }),
-        );
-    }, [production]);
-
-    const resetProduction = useCallback(() => {
-        localStorage.removeItem(STORAGE_KEY);
-        setProduction(createEmptyProduction());
+        latestProduction.current = next;
+        setState(next);
+        setStorageError(null);
+        return true;
     }, []);
-
-    const value = useMemo(
-        () => ({
-            production,
-            setProduction,
-            resetProduction,
-        }),
-        [production, resetProduction],
-    );
-
-    return (
-        <ProductionContext.Provider value={value}>
-            {children}
-        </ProductionContext.Provider>
-    );
+    const setProduction = useCallback((next: ProductionDay) => commit(() => next), [commit]);
+    const resetProduction = useCallback(() => { commit(createEmptyProduction); }, [commit]);
+    const updateQuantity = useCallback((pizzaId: string, distributorId: string, quantity: number) => {
+        commit((current) => updateProductionQuantity(current, pizzaId, distributorId, quantity));
+    }, [commit]);
+    const resetChanges = useCallback(() => { commit(resetProductionChanges); }, [commit]);
+    const getChangeCount = useCallback(() => countProductionChanges(latestProduction.current), []);
+    const value = useMemo(() => ({
+        production, setProduction, resetProduction, updateQuantity, resetChanges,
+        getChangeCount, changeCount: countProductionChanges(production), storageError,
+    }), [production, setProduction, resetProduction, updateQuantity, resetChanges, getChangeCount, storageError]);
+    return <ProductionContext.Provider value={value}>{children}</ProductionContext.Provider>;
 }

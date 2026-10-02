@@ -8,6 +8,8 @@ import {
 } from "react";
 
 import "./ProductionMatrix.css";
+import QuantityEditor from "./QuantityEditor";
+import { isQuantityModified } from "../../production/domain/productionEditing";
 
 import { useSettings } from "../../../hooks/useSettings";
 
@@ -29,6 +31,8 @@ import {
 
 interface ProductionMatrixProps {
     pizzas: PizzaProduction[];
+    isEditing: boolean;
+    onQuantityChange: (pizzaId: string, distributorId: string, quantity: number) => void;
     isImportDisabled: boolean;
     isImporting: boolean;
     onRequestImport: () => void;
@@ -139,6 +143,8 @@ const buildDistributors = (
 
 export default function ProductionMatrix({
     pizzas,
+    isEditing,
+    onQuantityChange,
     isImportDisabled,
     isImporting,
     onRequestImport,
@@ -349,7 +355,7 @@ export default function ProductionMatrix({
     }
 
     return (
-        <section className="production-matrix">
+        <section className={`production-matrix${isEditing ? " production-matrix--editing" : ""}`}>
             <div className="production-matrix__scroll">
                 <table
                     style={
@@ -461,10 +467,15 @@ export default function ProductionMatrix({
                                                 distributor.id,
                                             );
 
+                                        const cell = pizza.distributors.find((item) => item.id === distributor.id);
+                                        const modified = cell !== undefined && isQuantityModified(cell);
+                                        const label = `${formatPizzaDisplayName(pizza.name)} / ${distributor.shortName}`;
                                         return (
                                             <td
+                                                title={modified ? `Quantité Excel : ${cell.originalQuantity} → ${quantity}` : undefined}
                                                 className={[
                                                     "production-matrix__quantity",
+                                                    modified ? "production-matrix__quantity--modified" : "",
                                                     quantity === 0
                                                         ? "production-matrix__quantity--zero"
                                                         : "",
@@ -490,7 +501,11 @@ export default function ProductionMatrix({
                                                         : undefined
                                                 }
                                             >
-                                                {quantity}
+                                                {isEditing ? <QuantityEditor quantity={quantity} label={label}
+                                                    disabled={isImporting}
+                                                    onChange={(value) => onQuantityChange(pizza.id, distributor.id, value)} /> : quantity}
+                                                {modified && <span className="production-matrix__modified-marker"
+                                                    role="img" aria-label={`Case corrigée, quantité Excel : ${cell.originalQuantity}`}>●</span>}
                                             </td>
                                         );
                                     },
