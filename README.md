@@ -10,6 +10,19 @@
   React · TypeScript · Electron · Express · SQLite
 </div>
 
+## V2 in preparation — unreleased
+
+As of **1 October 2026**, local V2 includes quantity editing with **E**, derived
+totals and change markers; permanent dark mode; kit exclusion; a more visible
+next-pizza panel; and galleries of **up to 20 photos per pizza** with automatic
+playback, pause and eight timing options from **1 to 15 seconds**.
+
+64 tests, linting, type checks and builds have passed locally. Business feedback,
+official assembly photos and Windows acceptance testing remain pending. Package
+versions still refer to V1; no V2 installer is available yet. See the
+[current status and acceptance checklist](docs/V2_PREPARATION.md) and
+[dated verification journal](docs/JOURNAL_V2.md), in French.
+
 ## Overview
 
 Bruno Pizza was built for a real operational need and is installed in an active
@@ -32,7 +45,7 @@ production source; direct Adial integration is not part of the current scope.
 - imports and validates `.xlsx` and `.xls` production plans;
 - checks headers, duplicates, quantities and totals before displaying data;
 - provides an editable SQLite catalog with ordered recipes and product photos;
-- supports light and dark themes, keyboard controls and interface zoom;
+- uses a permanent dark theme, keyboard controls and interface zoom;
 - opens in fullscreen workshop mode with larger primary figures and labels for
   easier reading at a distance;
 - keeps user data separate from installed application files;
@@ -41,9 +54,21 @@ production source; direct Adial integration is not part of the current scope.
 - runs frontend, backend and desktop tests in GitHub Actions;
 - is documented and packaged for Windows and macOS.
 
-## Screenshots
+## V2 preview — local demonstration
 
-The screenshots use local demonstration data.
+![Assembly playback and larger next-pizza panel](docs/assets/screenshots/v2-production-demo.jpg)
+
+![Editable production dashboard with E shortcut](docs/assets/screenshots/v2-edition-demo.jpg)
+
+Local test captures from 1 October 2026. Generated assembly photos are fictional
+test assets, not the official recipe. Playback now starts automatically even
+when a screenshot shows a temporarily paused state.
+
+## V1 screenshot archive
+
+The screenshots show V1 using local demonstration data. The upcoming V2 uses
+a permanent dark theme; light screenshots are retained as a record of the
+released version.
 
 | Production dashboard | Manufacturing workflow |
 | --- | --- |
@@ -83,6 +108,7 @@ The screenshots use local demonstration data.
 flowchart LR
     Excel["Excel production plan"] -->|"local parsing and validation"| UI["React + TypeScript"]
     UI -->|"local API"| API["Express"]
+    UI --> Session["localStorage: production, corrections, position, timing"]
     API --> DB["SQLite"]
     API --> Images["Pizza photos"]
     Electron["Electron window"] --> UI
@@ -96,12 +122,12 @@ frontend through the internal `bruno-pizza://app` origin.
 ## Download
 
 The [Releases](https://github.com/JulienEsbt/bruno-pizza-production/releases)
-page contains the latest published builds. Version 1.1.4 was validated on the
-43-inch Windows production display and is the current Windows release:
+page lists published builds. The documented historical Windows reference is
+V1 1.1.4, validated on the 43-inch production display:
 
 - `Appli-Montage-Setup-1.1.4.exe` for 64-bit Intel/AMD Windows systems.
 
-The latest macOS Apple Silicon build remains
+The documented historical macOS Apple Silicon build is
 `Appli-Montage-1.1.3-macOS-Apple-Silicon.zip`.
 
 The current builds are not code-signed. Windows SmartScreen or macOS Gatekeeper
@@ -173,6 +199,11 @@ The application creates a new database from the initial catalog on first
 launch. Program updates reuse existing data and do not include it in the
 installer.
 
+The locations above store SQLite and photos. Imported production, manual
+corrections, workflow position and slideshow timing belong to browser storage,
+separately for each origin. A `data` folder backup does not include them.
+Local demonstration photos are not included in a fresh clone.
+
 ## Documentation
 
 - [User guide — French](docs/GUIDE_UTILISATEUR.md)
@@ -180,6 +211,9 @@ installer.
 - [Installation and operations — French](docs/INSTALLATION_ET_EXPLOITATION.md)
 - [Technical architecture — French](docs/ARCHITECTURE_TECHNIQUE.md)
 - [Changelog](CHANGELOG.md)
+- [V2 status and acceptance checklist — French](docs/V2_PREPARATION.md)
+- [V2 decisions and verification journal — French](docs/JOURNAL_V2.md)
+- [V2 acceptance checklist — French](docs/RECETTE_V2.md)
 
 ## Security scope
 
