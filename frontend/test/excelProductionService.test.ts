@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
     MAX_EXCEL_FILE_SIZE,
+    parseProductionExcelFile,
     parseProductionRows,
     validateExcelFile,
 } from "../src/features/production/services/excelProductionService.ts";
@@ -14,6 +15,30 @@ const createValidRows = () => [
     ["BÉARNAISE", 1, 0, 1],
     ["Total", 3, 3, 6],
 ];
+
+for (const format of ["xlsx", "xls"] as const) {
+    test(`importe un vrai classeur ${format} avec la bibliothèque corrigée`, async () => {
+        const XLSX = await import("xlsx");
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(
+            workbook,
+            XLSX.utils.aoa_to_sheet(createValidRows()),
+            "Répartition générale par distri",
+        );
+        const bytes = XLSX.write(workbook, {
+            type: "array",
+            bookType: format === "xls" ? "biff8" : "xlsx",
+        });
+        const production = await parseProductionExcelFile(
+            new File([bytes], `production.${format}`),
+        );
+
+        assert.equal(production.pizzas.length, 2);
+        assert.equal(production.pizzas[0]?.quantity, 5);
+        assert.equal(production.pizzas[1]?.quantity, 1);
+        assert.equal(production.date, "29 juillet 2026");
+    });
+}
 
 test("parse une production Excel valide", () => {
     const production = parseProductionRows(

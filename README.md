@@ -135,7 +135,7 @@ may therefore ask for confirmation on first launch.
 
 ## Run from source
 
-Requirements: Git, Node.js 22.5 or later and npm 10 or later.
+Requirements: Git, Node.js 22.17 or later and npm 10 or later.
 
 ```bash
 git clone https://github.com/JulienEsbt/bruno-pizza-production.git
